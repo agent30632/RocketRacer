@@ -9,21 +9,21 @@
             "name": "Launch Main",
             "request": "launch",
             "mainClass": "Main",
-            "projectName": "2021FinalProject_66c824f4"
+            "projectName": "RocketRacer_341a9a19"
         },
         {
             "type": "java",
             "name": "Launch Testing",
             "request": "launch",
             "mainClass": "Testing",
-            "projectName": "2021FinalProject_66c824f4"
+            "projectName": "RocketRacer_341a9a19"
         },
         {
             "type": "java",
             "name": "Launch MovingAndCollisions_Momentum",
             "request": "launch",
             "mainClass": "Testing.MovingAndCollisions_Momentum",
-            "projectName": "2021FinalProject_66c824f4"
+            "projectName": "RocketRacer_341a9a19"
         },
         {
             "type": "java",
@@ -36,7 +36,7 @@
             "name": "Launch App",
             "request": "launch",
             "mainClass": "App",
-            "projectName": "2021FinalProject_66c824f4"
+            "projectName": "RocketRacer_341a9a19"
         }
     ]
 }

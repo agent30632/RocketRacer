@@ -1,12 +1,15 @@
 import javax.swing.*;
 
 public class Main {
+    final static String GAME_NAME = "Rocket Racer";
 
-    final static String gameName = "Rocket Racer";
+    MainMenuPanel menuPanel = new MainMenuPanel();
+
     public static void main(String[] args) {
-        JFrame frame = new JFrame(gameName);
+        JFrame frame = new JFrame(GAME_NAME);
 
-        Game game = new Game();
+        // TODO: level loading
+        Game game = new Game("fillerString");
 
         frame.setUndecorated(true);
         frame.add(game);

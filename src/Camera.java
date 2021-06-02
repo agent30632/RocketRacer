@@ -1,8 +1,8 @@
 public class Camera {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
     
-    public Camera(int x, int y) {
+    public Camera(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -17,13 +17,26 @@ public class Camera {
         this.y = y;
     }
 
-    public int getX() {
+    /**
+     * Updates the current camera's position, using the given player and screen dimensions as reference
+     * @param player player object to base position on
+     * @param screenWidth width of screen
+     * @param screenHeight height of screen
+     */
+    public void update(Player player, int screenWidth, int screenHeight) {
+        // I don't know why it needs to be negative
+        // But it does so whatever
+        x = -player.posX + screenWidth / 2;
+        y = -player.posY + screenHeight / 2;
+    }
+
+    public double getX() {
         return x;
     }
     public void setX(int x) {
         this.x = x;
     }
-    public int getY() {
+    public double getY() {
         return y;
     }
     public void setY(int y) {

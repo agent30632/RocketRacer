@@ -21,8 +21,8 @@ public class MovingAndCollisions_Momentum extends JPanel implements Runnable, Ke
     int posX = 0;
     int posY = 0;
 
-	int screenWidth = 600;
-	int screenHeight = 600;
+	int screenWidth = 1600;
+	int screenHeight = 900;
 	Thread thread;
 	int FPS = 60;
 	
