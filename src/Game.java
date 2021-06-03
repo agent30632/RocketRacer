@@ -6,6 +6,8 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 
@@ -14,8 +16,6 @@ public class Game extends JPanel implements Runnable, KeyListener {
     // buttery smooth pls
     // TODO: FIX THE VERY CHUNKY BUTTER
     static final int FPS = 60;
-    static final int MAX_GRID_X = 32;
-    static final int MAX_GRID_Y = 32;
 
     // Game objects
     Thread gameThread;
@@ -28,33 +28,53 @@ public class Game extends JPanel implements Runnable, KeyListener {
     // Test elements
     Rectangle rectangle = new Rectangle(0, 0, 100, 100);
     // TODO: non-flat background because hoh dear
-    Rectangle playableArea = new Rectangle(0, 0, MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
+    Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
 
     // Track elements
-    ArrayList<TrackBlock> trackBlockList = new ArrayList<>();
-    TrackBlock boostBlock = new TrackBlock(BlockType.BOOST, 2, 1, BlockDirection.UP);
-    TrackBlock checkpointBlock = new TrackBlock(BlockType.CHECKPOINT, 2, 2, BlockDirection.UP);
-    TrackBlock wallBlock = new TrackBlock(BlockType.WALL, 4, 2, BlockDirection.UP);
-    TrackBlock wallBlock2 = new TrackBlock(BlockType.WALL, 5, 2, BlockDirection.UP);
-    TrackBlock resetBlock = new TrackBlock(BlockType.RESET, 3, 1, BlockDirection.UP);
-    TrackBlock noControlBlock = new TrackBlock(BlockType.NOCONTROL, 4, 1, BlockDirection.UP);
-    TrackBlock finishBlock = new TrackBlock(BlockType.FINISH, 6, 4, BlockDirection.UP);
-    TrackBlock startBlock = new TrackBlock(BlockType.START, 0, 0, BlockDirection.UP);
+    Track track;
+    String trackFilePath;
+
+    boolean trackLoaded = false;
+    HashSet<TrackBlock> trackBlockData = new HashSet<>();
+    // TrackBlock boostBlock = new TrackBlock(BlockType.BOOST, 2, 1, BlockDirection.UP);
+    // TrackBlock checkpointBlock = new TrackBlock(BlockType.CHECKPOINT, 2, 2, BlockDirection.UP);
+    // TrackBlock wallBlock = new TrackBlock(BlockType.WALL, 4, 2, BlockDirection.UP);
+    // TrackBlock wallBlock2 = new TrackBlock(BlockType.WALL, 5, 2, BlockDirection.UP);
+    // TrackBlock resetBlock = new TrackBlock(BlockType.RESET, 3, 1, BlockDirection.UP);
+    // TrackBlock noControlBlock = new TrackBlock(BlockType.NOCONTROL, 4, 1, BlockDirection.UP);
+    // TrackBlock finishBlock = new TrackBlock(BlockType.FINISH, 1, 0, BlockDirection.UP);
+    // TrackBlock startBlock = new TrackBlock(BlockType.START, 0, 0, BlockDirection.UP);
 
     // UI Elements
 
     // As it says on the tin
     // TODO: initialize with more than just the player
     public void initialize() {
-        player1 = new Player(300, 300, 0);
-        camera = new Camera(300, 300);
+        if (trackLoaded) {
+            Rectangle startRectangle = track.getStartBlock().hitbox;
+            double startX = startRectangle.getCenterX();
+            double startY = startRectangle.getCenterY();
+            double rotation = 0;
+            switch(track.getStartBlock().getDirection()) {
+                case UP:
+                    rotation = 90;
+                    break;
+                case DOWN:
+                    rotation = -90;
+                    break;
+                case LEFT:
+                    rotation = -180;
+                    break;
+                case RIGHT:
+                    rotation = 0;
+                    break;
+            }
+            
+            player1 = new Player(startX, startY, rotation);
+        }
         
-        trackBlockList.add(boostBlock);
-        trackBlockList.add(checkpointBlock);
-        trackBlockList.add(wallBlock);
-        trackBlockList.add(wallBlock2);
-        trackBlockList.add(resetBlock);
-        trackBlockList.add(noControlBlock);
+        camera = new Camera(300, 300);
+
     }
 
     @Override
@@ -78,8 +98,10 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // Player update functions
         player1.update();
         player1.keepInBounds();
-        for (TrackBlock block : trackBlockList) {
-            player1.checkBlockIntersection(block);
+        if (trackLoaded) {
+            for (TrackBlock block : trackBlockData) {
+                player1.checkBlockIntersection(block);
+            }
         }
 
         camera.update(player1, this.getWidth(), this.getHeight());
@@ -94,6 +116,26 @@ public class Game extends JPanel implements Runnable, KeyListener {
         setPreferredSize(new Dimension(1920, 1080));
         setVisible(true);
         setBackground(Color.BLACK);
+        trackFilePath = trackFile;
+
+        try {
+            track = new Track(trackFilePath);
+        } catch (FileNotFoundException e) {
+            // TODO: handle exception
+            System.out.println("file not found ruh roh");
+            System.exit(1);
+        } catch (IOException e) {
+            // TODO: handle exception
+            System.out.println("IOException whey oh");
+            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            System.out.println("illegal argument what the hay");
+            System.exit(1);
+        }
+        trackBlockData = track.getBlockSet();
+        trackLoaded = true;
 
         gameThread = new Thread(this);
         gameThread.start();
@@ -119,10 +161,14 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         // Walls
         // TODO: level loading + walls
-        for (TrackBlock block : trackBlockList) {
-            block.draw(g2D);
+        if (trackLoaded) {
+            for (TrackBlock block : trackBlockData) {
+                block.draw(g2D);
+            }
+            track.getStartBlock().draw(g2D);
+            track.getFinishBlock().draw(g2D);
         }
-
+        
         // Player drawing
         player1.draw(g2D);
 
@@ -165,7 +211,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
         }
         
         if (key == KeyEvent.VK_BACK_SPACE) {
-            player1.setPos(150, 150);
+            player1.setPos(track.getStartBlock().hitbox.getCenterX(), track.getStartBlock().hitbox.getCenterY());
             player1.zeroVelocity();
             player1.resetState();
         }

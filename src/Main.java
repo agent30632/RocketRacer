@@ -9,7 +9,7 @@ public class Main {
         JFrame frame = new JFrame(GAME_NAME);
 
         // TODO: level loading
-        Game game = new Game("fillerString");
+        Game game = new Game("tracks/testTrack.track");
 
         frame.setUndecorated(true);
         frame.add(game);

@@ -1,3 +1,4 @@
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +12,7 @@ public class Time implements Comparable<Time>{
      * @param timeStr a string representing a Time object, in the format minutes:seconds:milliseconds
      * @throws IllegalArgumentException if the provided string is not in the expected format
      */
-    public Time(String timeStr) {
+    public Time(String timeStr) throws IllegalArgumentException {
         // TODO: disallow invalid times (i.e. negative numbers, less/more than 60 seconds/minutes)
         Pattern timePattern = Pattern.compile("[0-9]{2,}:[0-5][0-9]\\.[0-9]{2}");
         Matcher timeMatch = timePattern.matcher(timeStr);
@@ -35,9 +36,9 @@ public class Time implements Comparable<Time>{
     /**
      * Constructs a new Time object with the value given in milliseconds. Does not allow time values exceeding one hour, nor negative time values.
      * @param milliseconds length of time, in milliseconds
-     * @throws IllegalArgumentException if the provided millisecond value exceeds one hour or is less than zero.
+     * @throws ParseException if the provided millisecond value exceeds one hour or is less than zero.
      */
-    public Time(long milliseconds) {
+    public Time(long milliseconds) throws IllegalArgumentException {
         if (!(milliseconds >= 3600000 || milliseconds < 0)) {
             int newMilliseconds = Math.toIntExact(milliseconds % 100);
             long newSeconds = milliseconds / 100;

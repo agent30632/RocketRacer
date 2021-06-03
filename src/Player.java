@@ -54,7 +54,7 @@ public class Player {
     ImageIcon playerBoost = new ImageIcon("assets/img/player_boost.png");
     Image playerBoostScaled;
     
-    public Player(int posX, int posY, double direction) {
+    public Player(double posX, double posY, double direction) {
         this.posX = posX;
         this.posY = posY;
         this.direction = direction;
@@ -235,16 +235,16 @@ public class Player {
 		if(this.posX < hitbox.width / 2) {
             this.setPos(hitbox.width / 2, this.posY);
             velX = -velX * COLLISION_DAMPING;
-        } else if(this.posX > (Game.MAX_GRID_X * TrackBlock.BLOCK_WIDTH) - hitbox.width / 2) {
-            this.setPos((Game.MAX_GRID_X * TrackBlock.BLOCK_WIDTH) - hitbox.width / 2, this.posY);
+        } else if(this.posX > (Track.MAX_GRID_X * TrackBlock.BLOCK_WIDTH) - hitbox.width / 2) {
+            this.setPos((Track.MAX_GRID_X * TrackBlock.BLOCK_WIDTH) - hitbox.width / 2, this.posY);
             velX = -velX * COLLISION_DAMPING;
         }
 		
 		if(this.posY < hitbox.height / 2) {
             this.setPos(this.posX, hitbox.height / 2);
             velY = -velY * COLLISION_DAMPING;
-        } else if(this.posY > (Game.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT) - hitbox.width / 2) {
-            this.setPos(this.posX, (Game.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT) - hitbox.width / 2);
+        } else if(this.posY > (Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT) - hitbox.width / 2) {
+            this.setPos(this.posX, (Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT) - hitbox.width / 2);
             velY = -velY * COLLISION_DAMPING;
         }
 			

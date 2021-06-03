@@ -1,0 +1,33 @@
+The .track file format is a format intended for use by this game.
+At its core, a .track file stores all track metadata, as well as track block position data.
+It is essentially a text file with a specific extension to differentiate it from other, non-track-data files.
+
+The first five lines of the .track file defines track metadata:
+    - First line defines the unique track ID.
+    - The second through fifth lines define the bronze, silver, gold, and author medal times, in that order.
+If one of these lines contains an error (e.g. invalid time format), the loading process will be aborted.
+If the game detects two tracks with the same ID, the file read first will be discarded.
+
+Every line thereafter defines track block data, in one of the following formats:
+    1. (x, y) <type> <direction>, or:
+    2. (x1, y1) (x2, y2) <type> <direction>
+The second format is not usable by blocks of type START, FINISH, and CHECKPOINT.
+The first line of track data must define the start block. If the start block is defined anywhere else, it will be ignored, and if the start block is not parsed, the track loading will abort.
+The second line of track data must define the finish block. If the finish block is defined anywhere else, it will be ignored, and if the finish block is not parsed, the track loading will abort.
+If any of these lines contain an error (i.e. incorrect format, invalid arguments), the line will be ignored, unless it is either the first or last line, in which case the loading process will be aborted.
+If two blocks exist on the same coordinate, the block that is read first will remain, while the block read second is discarded.
+
+The list of valid block types is as follows (* denotes types incompatible with format 2):
+    - START *
+    - CHECKPOINT *
+    - FINISH *
+    - BOOST
+    - NOCONTROL
+    - RESET
+    - WALL
+
+The list of valid block directions is as follows:
+    - UP
+    - RIGHT
+    - DOWN
+    - LEFT
