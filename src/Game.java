@@ -23,14 +23,23 @@ public class Game extends JPanel implements Runnable, KeyListener {
     // I added a 1 to differentiate the class and the object itself
     // "Player player" is cursed and likely punishable by life in prison
     Player player1;
+    
+    // Game state variables
+    boolean timeIsRunning;
+    boolean startingState;
+    boolean haveParsedFinish;
+
+    // Timing variables
     long timeStart;
     long timeElapsed;
-    boolean timeIsRunning;
+    // boolean countdownTimer;
+    // long countdownLastCount;
+    // int countdownTimesCounted;
 
-    // Game variables
-    // Test elements
+    // Misc. elements
     Dimension screenDimensions;
     Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
+    Time personalBest;
 
     // Track elements
     Track track;
@@ -48,30 +57,38 @@ public class Game extends JPanel implements Runnable, KeyListener {
     Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
     JLabel restartLabel;
     JLabel exitLabel;
-    JLabel congratsLabel;
 
     // Constructor for the panel
     public Game(String trackFile) {
+        // Setting preferences for the panel
         setPreferredSize(new Dimension(1920, 1080));
         setVisible(true);
         setBackground(Color.BLACK);
         trackFilePath = trackFile;
 
+        // Loading the track
         try {
             track = new Track(trackFilePath);
         } catch (FileNotFoundException e) {
             // TODO: handle exception
+            System.out.println("wuh oh");
             System.exit(1);
         } catch (IOException e) {
             // TODO: handle exception
+            System.out.println(" there was an");
             System.exit(1);
         } catch (IllegalArgumentException e) {
             // TODO: handle exception
+            System.out.println(" exception that i didn't figure out");
             System.exit(1);
         }
         trackBlockData = track.getBlockSet();
         trackLoaded = true;
 
+        // Personal best times
+        personalBest = Main.getPersonalBest(track.getTrackID());
+
+        // Creating UI elements
         screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
         exitLabel = new JLabel("Exit", SwingConstants.LEFT);
         exitLabel.setBounds(
@@ -82,6 +99,12 @@ public class Game extends JPanel implements Runnable, KeyListener {
         );
         exitLabel.setFont(uiTextMedium);
         exitLabel.setForeground(Color.WHITE);
+        exitLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // TODO: EXIT THE GAME AND RETURN TO REALITY
+            }
+        });
 
         restartLabel = new JLabel("Restart", SwingConstants.RIGHT);
         restartLabel.setBounds(
@@ -92,6 +115,14 @@ public class Game extends JPanel implements Runnable, KeyListener {
         );
         restartLabel.setFont(uiTextMedium);
         restartLabel.setForeground(Color.WHITE);
+        restartLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // TODO Auto-generated method stub
+                player1.respawnToStart();
+                reset();
+            }
+        });
 
         gameThread = new Thread(this);
         gameThread.start();
@@ -125,8 +156,11 @@ public class Game extends JPanel implements Runnable, KeyListener {
         
         camera = new Camera(300, 300);
 
+        // Timer stuff
         timeStart = System.currentTimeMillis();
         timeIsRunning = true;
+
+        reset();
     }
 
     @Override
@@ -166,17 +200,54 @@ public class Game extends JPanel implements Runnable, KeyListener {
             timeElapsed = System.currentTimeMillis() - timeStart;
             timeObj = new Time(timeElapsed);
         }
+
+        if (player1.isFinished && !haveParsedFinish) {
+            // TODO: parse finish
+            Time latestTime = timeObj;
+            if (personalBest != null) {
+                if (timeObj.compareTo(personalBest) < 0) {
+                    Main.addPersonalData(track.getTrackID(), latestTime);
+                    personalBest = latestTime;
+                    Main.saveDataToFile();
+                }
+            } else {
+                Main.addPersonalData(track.getTrackID(), timeObj);
+                personalBest = latestTime;
+                // TODO: don't always save to file when you finish
+                // Maybe just when you exit or something
+                Main.saveDataToFile();
+            }
+            
+            haveParsedFinish = true;
+        }
     }
 
-    public void restart() {
+    public void reset() {
         // TODO: allow restarting the game
         timeStart = System.currentTimeMillis();
+        timeObj = new Time(0, 0, 0);
 
         for (TrackBlock trackBlock : trackBlockData) {
             if (trackBlock.getType() == BlockType.CHECKPOINT) {
                 trackBlock.checkpointHit = false;
             }
         }
+
+        timeIsRunning = false;
+        player1.isNoControl = true;
+
+        startingState = true;
+        haveParsedFinish = false;
+
+        remove(exitLabel);
+        remove(restartLabel);
+    }
+
+    public void start() {
+        timeStart = System.currentTimeMillis();
+        timeIsRunning = true;
+        player1.isNoControl = false;
+        startingState = false;
     }
  
     @Override
@@ -197,11 +268,11 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // Game draw calls
         g2D.translate(camera.getX(), camera.getY()); // god bless this method        
 
+        // Background
         g2D.setColor(Color.LIGHT_GRAY);
         g2D.fill(playableArea);
 
-        // Walls
-        // TODO: level loading + walls
+        // Track blocks
         if (trackLoaded) {
             for (TrackBlock block : trackBlockData) {
                 block.draw(g2D);
@@ -209,26 +280,34 @@ public class Game extends JPanel implements Runnable, KeyListener {
             track.getStartBlock().draw(g2D);
             track.getFinishBlock().draw(g2D);
         }
-        
+
+        // Debug: player hitbox
+        // g2D.setColor(Color.WHITE);
+        // g2D.fill(player1.hitbox);
         // Player drawing
-        player1.draw(g2D);
+        player1.draw(g2D);        
 
         // UI elements
         g2D.translate(-camera.getX(), -camera.getY());
 
         // Debug elements
         g2D.setColor(Color.WHITE);
+        // g2D.drawString("countdown thing = " + countdownTimesCounted, 1000, 50);
         // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
         // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
         // g2D.drawString("Position: x = " + player1.posX + " y = " + player1.posY, 50, 50);
         // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
 
         // UI elements
+        if (startingState) {
+            drawCenteredText(g2D, "Press any key to start...", 72, uiTextBig);
+        }
+        
         if (!player1.isFinished) {
             // Anything in here only displays if the player is still going
             if (player1.isBoosting) {
                 drawCenteredText(g2D, "BOOST", 72, uiTextBig);
-            } else if (player1.isNoControl) {
+            } else if (player1.isNoControl && !startingState) {
                 drawCenteredText(g2D, "NO CONTROL", 72, uiTextBig);
             }
 
@@ -260,16 +339,27 @@ public class Game extends JPanel implements Runnable, KeyListener {
         } else {
             // Game finininininsh UI
             Color prevColor = g2D.getColor();
-            g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
+            g2D.setColor(new Color(0f, 0f, 0f, 0.75f));
             g2D.fillRoundRect(
                 ((int) screenDimensions.getWidth() - 800) / 2, 
                 ((int) screenDimensions.getHeight() - 500) / 2, 
                 800, 500, 50, 50
             );
-            g2D.setColor(prevColor);
+
+            g2D.setColor(Color.WHITE);
+            g2D.setFont(uiTextMediumHighlight);
+            drawCenteredText(g2D, "Time: " + timeObj, 300, uiTextMediumHighlight);
+            if (personalBest == null) {
+                drawCenteredText(g2D, "Personal Best: " + new Time(0, 0, 0), 375, uiTextMediumHighlight);
+            } else {
+                drawCenteredText(g2D, "Personal Best: " + personalBest, 375, uiTextMediumHighlight);
+            }
+            
 
             add(exitLabel);
             add(restartLabel);
+
+            g2D.setColor(prevColor);
         }
         
     }
@@ -299,6 +389,9 @@ public class Game extends JPanel implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
+        if (startingState && key != KeyEvent.VK_ESCAPE) {
+            start();
+        }
         // Player controls
         if (!player1.isNoControl) {
             if (key == KeyEvent.VK_W) {
@@ -318,11 +411,10 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         if (key == KeyEvent.VK_BACK_SPACE) {
             player1.respawnToStart();
-            restart();
+            reset();
         } else if (key == KeyEvent.VK_ENTER && !player1.isFinished) {
             player1.resetToCP();
         }
-            
     }
 
     @Override

@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch LoopSound",
+            "request": "launch",
+            "mainClass": "LoopSound",
+            "projectName": "RocketRacer_341a9a19"
+        },
+        {
+            "type": "java",
+            "name": "Launch SoundClipTest",
+            "request": "launch",
+            "mainClass": "SoundClipTest",
+            "projectName": "RocketRacer_341a9a19"
+        },
+        {
+            "type": "java",
+            "name": "Launch Testing",
+            "request": "launch",
+            "mainClass": "Testing.Testing",
+            "projectName": "RocketRacer_341a9a19"
+        },
+        {
+            "type": "java",
             "name": "Launch test",
             "request": "launch",
             "mainClass": "Testing.test",

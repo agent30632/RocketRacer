@@ -14,7 +14,7 @@ public class Time implements Comparable<Time>{
      */
     public Time(String timeStr) throws IllegalArgumentException {
         // TODO: disallow invalid times (i.e. negative numbers, less/more than 60 seconds/minutes)
-        Pattern timePattern = Pattern.compile("[0-9]{2,}:[0-5][0-9]\\.[0-9]{2}");
+        Pattern timePattern = Pattern.compile("[0-9]{2,}:[0-5][0-9]\\.[0-9]{3}");
         Matcher timeMatch = timePattern.matcher(timeStr);
 
         if (timeMatch.matches()) {
@@ -23,7 +23,7 @@ public class Time implements Comparable<Time>{
     
             int minutes = Integer.parseInt(timeStr.substring(0, colon));
             int seconds = Integer.parseInt(timeStr.substring(colon + 1, period));
-            int milliseconds = Integer.parseInt(timeStr.substring(period + 1 + 1));
+            int milliseconds = Integer.parseInt(timeStr.substring(period + 1));
     
             this.minutes = minutes;
             this.seconds = seconds;
