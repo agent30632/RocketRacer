@@ -23,11 +23,13 @@ public class Game extends JPanel implements Runnable, KeyListener {
     // I added a 1 to differentiate the class and the object itself
     // "Player player" is cursed and likely punishable by life in prison
     Player player1;
+    long timeStart;
+    long timeElapsed;
+    boolean timeIsRunning;
 
     // Game variables
     // Test elements
-    Rectangle rectangle = new Rectangle(0, 0, 100, 100);
-    // TODO: non-flat background because hoh dear
+    Dimension screenDimensions;
     Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
 
     // Track elements
@@ -36,16 +38,64 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     boolean trackLoaded = false;
     HashSet<TrackBlock> trackBlockData = new HashSet<>();
-    // TrackBlock boostBlock = new TrackBlock(BlockType.BOOST, 2, 1, BlockDirection.UP);
-    // TrackBlock checkpointBlock = new TrackBlock(BlockType.CHECKPOINT, 2, 2, BlockDirection.UP);
-    // TrackBlock wallBlock = new TrackBlock(BlockType.WALL, 4, 2, BlockDirection.UP);
-    // TrackBlock wallBlock2 = new TrackBlock(BlockType.WALL, 5, 2, BlockDirection.UP);
-    // TrackBlock resetBlock = new TrackBlock(BlockType.RESET, 3, 1, BlockDirection.UP);
-    // TrackBlock noControlBlock = new TrackBlock(BlockType.NOCONTROL, 4, 1, BlockDirection.UP);
-    // TrackBlock finishBlock = new TrackBlock(BlockType.FINISH, 1, 0, BlockDirection.UP);
-    // TrackBlock startBlock = new TrackBlock(BlockType.START, 0, 0, BlockDirection.UP);
 
     // UI Elements
+    Time timeObj = null;
+    Font uiTextBig = new Font(Font.SANS_SERIF, Font.BOLD, 64);
+    Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
+    Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
+    Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
+    Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
+    JLabel restartLabel;
+    JLabel exitLabel;
+    JLabel congratsLabel;
+
+    // Constructor for the panel
+    public Game(String trackFile) {
+        setPreferredSize(new Dimension(1920, 1080));
+        setVisible(true);
+        setBackground(Color.BLACK);
+        trackFilePath = trackFile;
+
+        try {
+            track = new Track(trackFilePath);
+        } catch (FileNotFoundException e) {
+            // TODO: handle exception
+            System.exit(1);
+        } catch (IOException e) {
+            // TODO: handle exception
+            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            // TODO: handle exception
+            System.exit(1);
+        }
+        trackBlockData = track.getBlockSet();
+        trackLoaded = true;
+
+        screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
+        exitLabel = new JLabel("Exit", SwingConstants.LEFT);
+        exitLabel.setBounds(
+            (int) screenDimensions.getWidth() / 2 - 350, 
+            (int) screenDimensions.getHeight() / 2 + 170, 
+            350, 
+            50
+        );
+        exitLabel.setFont(uiTextMedium);
+        exitLabel.setForeground(Color.WHITE);
+
+        restartLabel = new JLabel("Restart", SwingConstants.RIGHT);
+        restartLabel.setBounds(
+            (int) screenDimensions.getWidth() / 2, 
+            (int) screenDimensions.getHeight() / 2 + 170, 
+            350, 
+            50
+        );
+        restartLabel.setFont(uiTextMedium);
+        restartLabel.setForeground(Color.WHITE);
+
+        gameThread = new Thread(this);
+        gameThread.start();
+    }
 
     // As it says on the tin
     // TODO: initialize with more than just the player
@@ -70,11 +120,13 @@ public class Game extends JPanel implements Runnable, KeyListener {
                     break;
             }
             
-            player1 = new Player(startX, startY, rotation);
+            player1 = new Player(startX, startY, rotation, track.getStartBlock());
         }
         
         camera = new Camera(300, 300);
 
+        timeStart = System.currentTimeMillis();
+        timeIsRunning = true;
     }
 
     @Override
@@ -100,61 +152,50 @@ public class Game extends JPanel implements Runnable, KeyListener {
         player1.keepInBounds();
         if (trackLoaded) {
             for (TrackBlock block : trackBlockData) {
-                player1.checkBlockIntersection(block);
+                player1.checkBlockIntersection(block, track);
             }
+            player1.checkBlockIntersection(track.getStartBlock(), track);
+            player1.checkBlockIntersection(track.getFinishBlock(), track);
         }
 
-        camera.update(player1, this.getWidth(), this.getHeight());
+        if (!player1.isFinished) {
+            camera.update(player1, this.getWidth(), this.getHeight());
+        }
+
+        if (timeIsRunning && !(player1.isFinished)) {
+            timeElapsed = System.currentTimeMillis() - timeStart;
+            timeObj = new Time(timeElapsed);
+        }
     }
 
     public void restart() {
         // TODO: allow restarting the game
-    }
+        timeStart = System.currentTimeMillis();
 
-    // Constructor for the panel
-    public Game(String trackFile) {
-        setPreferredSize(new Dimension(1920, 1080));
-        setVisible(true);
-        setBackground(Color.BLACK);
-        trackFilePath = trackFile;
-
-        try {
-            track = new Track(trackFilePath);
-        } catch (FileNotFoundException e) {
-            // TODO: handle exception
-            System.out.println("file not found ruh roh");
-            System.exit(1);
-        } catch (IOException e) {
-            // TODO: handle exception
-            System.out.println("IOException whey oh");
-            System.exit(1);
-        } catch (IllegalArgumentException e) {
-            // TODO: handle exception
-            e.printStackTrace();
-            System.out.println("illegal argument what the hay");
-            System.exit(1);
+        for (TrackBlock trackBlock : trackBlockData) {
+            if (trackBlock.getType() == BlockType.CHECKPOINT) {
+                trackBlock.checkpointHit = false;
+            }
         }
-        trackBlockData = track.getBlockSet();
-        trackLoaded = true;
-
-        gameThread = new Thread(this);
-        gameThread.start();
     }
  
     @Override
     public void paintComponent(Graphics g) {
         // TODO: screen space works from top left, remember that when building things
-        super.paintComponent(g);
-
-        // Game draw calls
         Graphics2D g2D = (Graphics2D) g;
-        g2D.translate(camera.getX(), camera.getY()); // god bless this method
-        
+
         // Rendering settings
         RenderingHints antiAliasing = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2D.setRenderingHints(antiAliasing);
         RenderingHints imageInterp = new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2D.setRenderingHints(imageInterp);
+        RenderingHints textAntiAliasing = new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+        g2D.setRenderingHints(textAntiAliasing);
+
+        super.paintComponent(g);
+
+        // Game draw calls
+        g2D.translate(camera.getX(), camera.getY()); // god bless this method        
 
         g2D.setColor(Color.LIGHT_GRAY);
         g2D.fill(playableArea);
@@ -175,12 +216,78 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // UI elements
         g2D.translate(-camera.getX(), -camera.getY());
 
-        // Debug
+        // Debug elements
         g2D.setColor(Color.WHITE);
-        g2D.drawString("Player direction = " + player1.direction, 1000, 50);
-        g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
-        g2D.drawString("Position: x = " + player1.posX + " y = " + player1.posY, 50, 50);
-        g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
+        // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
+        // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
+        // g2D.drawString("Position: x = " + player1.posX + " y = " + player1.posY, 50, 50);
+        // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
+
+        // UI elements
+        if (!player1.isFinished) {
+            // Anything in here only displays if the player is still going
+            if (player1.isBoosting) {
+                drawCenteredText(g2D, "BOOST", 72, uiTextBig);
+            } else if (player1.isNoControl) {
+                drawCenteredText(g2D, "NO CONTROL", 72, uiTextBig);
+            }
+
+            // Rectangle below time & cp count
+            Color prevColor = g2D.getColor();
+            g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
+            g2D.fillRoundRect(
+                ((int) screenDimensions.getWidth() - 288) / 2, 
+                ((int) screenDimensions.getHeight() - 112), 
+                288, 162, 50, 50
+            );
+            g2D.setColor(prevColor);
+
+                
+            if (timeObj != null) {
+                drawCenteredText(
+                    g2D, 
+                    timeObj.toString(), 
+                    (int) screenDimensions.getHeight() - 64, 
+                    uiTextMediumHighlight
+                );
+            }
+            drawCenteredText(
+                g2D, 
+                String.format("%d/%d", player1.checkpointCount, track.getCheckpointCount()), 
+                (int) screenDimensions.getHeight() - 112, 
+                uiTextSmallItalics
+            );
+        } else {
+            // Game finininininsh UI
+            Color prevColor = g2D.getColor();
+            g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
+            g2D.fillRoundRect(
+                ((int) screenDimensions.getWidth() - 800) / 2, 
+                ((int) screenDimensions.getHeight() - 500) / 2, 
+                800, 500, 50, 50
+            );
+            g2D.setColor(prevColor);
+
+            add(exitLabel);
+            add(restartLabel);
+        }
+        
+    }
+
+    public void drawCenteredText(Graphics g, String text, int yPos, Font font) {
+        // adapted from an answer by Daniel Kvist on StackOverflow for drawing centered text
+        // Get the FontMetrics
+        Font oldFont = g.getFont();
+        FontMetrics metrics = g.getFontMetrics(font);
+        // Determine the X coordinate for the text
+        int x = 0 + (screenDimensions.width - metrics.stringWidth(text)) / 2;
+        // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
+        int y = yPos + metrics.getAscent();
+        // Set the font
+        g.setFont(font);
+        // Draw the String
+        g.drawString(text, x, y);
+        g.setFont(oldFont);
     }
 
     @Override
@@ -190,7 +297,6 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        // TODO: use the Controls class to allow for remappable controls
         int key = e.getKeyCode();
 
         // Player controls
@@ -209,11 +315,12 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 player1.isTurningLeft = true;
             }
         }
-        
+
         if (key == KeyEvent.VK_BACK_SPACE) {
-            player1.setPos(track.getStartBlock().hitbox.getCenterX(), track.getStartBlock().hitbox.getCenterY());
-            player1.zeroVelocity();
-            player1.resetState();
+            player1.respawnToStart();
+            restart();
+        } else if (key == KeyEvent.VK_ENTER && !player1.isFinished) {
+            player1.resetToCP();
         }
             
     }

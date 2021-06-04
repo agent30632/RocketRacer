@@ -33,7 +33,9 @@ public class Player {
     
     // block logic stuff
     public int checkpointCount;
-    public TrackBlock lastCheckpoint;
+    public TrackBlock lastCheckpoint = null;
+    public TrackBlock startBlock = null;
+    public boolean isFinished = false;
 
     // movement booleans
     public boolean isAccelerating; // if player accelerating
@@ -43,9 +45,7 @@ public class Player {
 
     // block booleans
     public boolean isBoosting;
-    public boolean isNoControl;
-
-    
+    public boolean isNoControl;    
 
     ImageIcon playerBody = new ImageIcon("assets/img/player_main.png");
     Image playerBodyScaled;
@@ -54,7 +54,7 @@ public class Player {
     ImageIcon playerBoost = new ImageIcon("assets/img/player_boost.png");
     Image playerBoostScaled;
     
-    public Player(double posX, double posY, double direction) {
+    public Player(double posX, double posY, double direction, TrackBlock startBlock) {
         this.posX = posX;
         this.posY = posY;
         this.direction = direction;
@@ -64,6 +64,9 @@ public class Player {
 
         // block logic vars
         this.checkpointCount = 0;
+        this.startBlock = startBlock;
+
+        this.isFinished = false;
 
         hitbox = new Rectangle((int) posX, (int) posY, PLAYER_WIDTH, PLAYER_HEIGHT);
         playerBodyScaled = playerBody.getImage().getScaledInstance(PLAYER_WIDTH, PLAYER_HEIGHT, Image.SCALE_DEFAULT);
@@ -183,7 +186,7 @@ public class Player {
      * Checks if the player is intersecting the given block, and applies block behaviour accordingly
      * @param block the block to check intersections with
      */
-    public void checkBlockIntersection(TrackBlock block) {
+    public void checkBlockIntersection(TrackBlock block, Track track) {
         if (hitbox.intersects(block.hitbox)) {
             switch (block.getType()) {
                 case WALL:
@@ -199,12 +202,16 @@ public class Player {
                     if (block.checkpointHit == false) {
                         this.checkpointCount++;
                         block.checkpointHit = true;
+                        this.lastCheckpoint = block;
                         // TODO: checkpoint respawns
                     }
                     break;
     
                 case FINISH:
                     // TODO: FINISH LOGIC
+                    if (this.checkpointCount == track.getCheckpointCount()) {
+                        this.isFinished = true;
+                    }
                     break;
     
                 case BOOST:
@@ -220,10 +227,6 @@ public class Player {
                 case RESET:
                     this.isNoControl = false;
                     this.isBoosting = false;
-                    break;
-            
-                default:
-                    // by default do literally nothing
                     break;
             }
         } else {
@@ -257,21 +260,62 @@ public class Player {
         hitbox.setRect(posX - PLAYER_WIDTH / 2 + PLAYER_HITBOXTRIM, posY - PLAYER_HEIGHT / 2 + PLAYER_HITBOXTRIM, PLAYER_WIDTH - PLAYER_HITBOXTRIM * 2, PLAYER_HEIGHT - PLAYER_HITBOXTRIM * 2);
     }
 
-    public void zeroVelocity() {
+    public void resetToCP() {
         velX = 0;
         velY = 0;
-    }
-
-    public void resetState() {
+        
         this.isBoosting = false;
         this.isNoControl = false;
+
+        this.isFinished = false;
+
+        if (this.lastCheckpoint == null) {
+            respawnToStart();
+        } else {
+            double x = this.lastCheckpoint.hitbox.getCenterX();
+            double y = this.lastCheckpoint.hitbox.getCenterY();
+
+            this.setPos(x, y);
+            this.setDirection(this.lastCheckpoint.getDirection());
+        }
     }
 
-    public void reset() {
-        // TODO: unconfuse with resetState
+    public void respawnToStart() {
+        // TODO: fully reset everything (i.e. go agane)
+        velX = 0;
+        velY = 0;
+
+        this.isBoosting = false;
+        this.isNoControl = false;
+
+        this.isFinished = false;
+
+        double x = this.startBlock.hitbox.getCenterX();
+        double y = this.startBlock.hitbox.getCenterY();
+
+        this.setPos(x, y);
+        this.setDirection(this.startBlock.getDirection());
+        this.checkpointCount = 0;
     }
 
-    public void respawn() {
-
+    /**
+     * Sets the player's rotation to the same as a given block direction
+     * @param direction the direction of the player
+     */
+    public void setDirection(BlockDirection direction) {
+        switch(direction) {
+            case UP:
+                this.direction = 90;
+                break;
+            case DOWN:
+                this.direction = -90;
+                break;
+            case LEFT:
+                this.direction = -180;
+                break;
+            case RIGHT:
+                this.direction = 0;
+                break;
+        }
     }
 }

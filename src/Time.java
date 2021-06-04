@@ -40,8 +40,8 @@ public class Time implements Comparable<Time>{
      */
     public Time(long milliseconds) throws IllegalArgumentException {
         if (!(milliseconds >= 3600000 || milliseconds < 0)) {
-            int newMilliseconds = Math.toIntExact(milliseconds % 100);
-            long newSeconds = milliseconds / 100;
+            int newMilliseconds = Math.toIntExact(milliseconds % 1000);
+            long newSeconds = milliseconds / 1000;
     
             this.milliseconds = newMilliseconds;
     
@@ -68,7 +68,7 @@ public class Time implements Comparable<Time>{
     @Override
     public String toString() {
         // TODO: idk if this actually works but we'll see
-        return String.format("%02d:%02d.%02d", minutes, seconds, milliseconds);
+        return String.format("%02d:%02d.%03d", minutes, seconds, milliseconds);
     }
 
     /**
@@ -78,9 +78,9 @@ public class Time implements Comparable<Time>{
         int extraSeconds = 0;
         int newMS = 0;
 
-        if (this.milliseconds >= 100) {
-            newMS = this.milliseconds % 100;
-            extraSeconds = this.seconds / 100;
+        if (this.milliseconds >= 1000) {
+            newMS = this.milliseconds % 1000;
+            extraSeconds = this.seconds / 1000;
             this.milliseconds = newMS;
             this.seconds += extraSeconds;
         }

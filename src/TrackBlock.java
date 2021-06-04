@@ -32,50 +32,52 @@ public class TrackBlock {
      * @param str the string to parse
      * @throws IllegalArgumentException if either the given coordinates are out of range
      */
-    public TrackBlock(String str) throws IllegalArgumentException {
+    public static TrackBlock parseBlock(String str) throws IllegalArgumentException {
         int typeDirSeperator = str.lastIndexOf(" ");
 
-        String direction = str.substring(typeDirSeperator + 1);
-        switch (direction) {
+        String directionStr = str.substring(typeDirSeperator + 1);
+        BlockDirection direction = null;
+        switch (directionStr) {
             case "UP":
-                this.direction = BlockDirection.UP;
+                direction = BlockDirection.UP;
                 break;
             case "RIGHT":
-                this.direction = BlockDirection.RIGHT;
+                direction = BlockDirection.RIGHT;
                 break;
             case "DOWN":
-                this.direction = BlockDirection.DOWN;
+                direction = BlockDirection.DOWN;
                 break;
             case "LEFT":
-                this.direction = BlockDirection.LEFT;
+                direction = BlockDirection.LEFT;
                 break;
         }
 
         String coordTypeData = str.substring(0, typeDirSeperator);
         int coordTypeSeparator = coordTypeData.lastIndexOf(" ");
 
-        String type = coordTypeData.substring(coordTypeSeparator + 1);
-        switch (type) {
+        String typeStr = coordTypeData.substring(coordTypeSeparator + 1);
+        BlockType type = null;
+        switch (typeStr) {
             case "START":
-                this.type = BlockType.START;
+                type = BlockType.START;
                 break;
             case "CHECKPOINT":
-                this.type = BlockType.CHECKPOINT;
+                type = BlockType.CHECKPOINT;
                 break;
             case "FINISH":
-                this.type = BlockType.FINISH;
+                type = BlockType.FINISH;
                 break;
             case "BOOST":
-                this.type = BlockType.BOOST;
+                type = BlockType.BOOST;
                 break;
             case "NOCONTROL":
-                this.type = BlockType.NOCONTROL;
+                type = BlockType.NOCONTROL;
                 break;
             case "RESET":
-                this.type = BlockType.RESET;
+                type = BlockType.RESET;
                 break;
             case "WALL":
-                this.type = BlockType.WALL;
+                type = BlockType.WALL;
                 break;
         }
 
@@ -86,16 +88,13 @@ public class TrackBlock {
         if (x < 0 || x >= Track.MAX_GRID_X) {
             throw new IllegalArgumentException();
         }
-        this.gridX = x;
 
         int y = Integer.parseInt(coordTokenizer.nextToken());
         if (y < 0 || y >= Track.MAX_GRID_Y) {
             throw new IllegalArgumentException();
         }
-        this.gridY = y;
 
-        this.checkpointHit = false;
-        this.hitbox = new Rectangle(gridX * BLOCK_WIDTH, gridY * BLOCK_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT);
+        return new TrackBlock(type, x, y, direction);
     }
 
     /**

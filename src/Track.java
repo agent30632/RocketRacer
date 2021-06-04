@@ -21,7 +21,7 @@ public class Track implements Comparable<Track> {
     private TrackBlock finishBlock;
     private HashSet<TrackBlock> blockList;
 
-    private int checkpointCount;
+    private int checkpointCount = 0;
 
     /**
      * Constructs a new Track object from a file
@@ -40,12 +40,12 @@ public class Track implements Comparable<Track> {
         this.goldTime = new Time(bufIn.readLine());
         this.authorTime = new Time(bufIn.readLine());
 
-        this.startBlock = new TrackBlock(bufIn.readLine());
+        this.startBlock = TrackBlock.parseBlock(bufIn.readLine());
         if (this.startBlock.getType() != BlockType.START) {
             bufIn.close();
             throw new IllegalArgumentException();
         }
-        this.finishBlock = new TrackBlock(bufIn.readLine());
+        this.finishBlock = TrackBlock.parseBlock(bufIn.readLine());
         if (this.finishBlock.getType() != BlockType.FINISH) {
             bufIn.close();
             throw new IllegalArgumentException();
@@ -61,15 +61,10 @@ public class Track implements Comparable<Track> {
             Matcher format2Matcher = blockFormatAlt.matcher(trackData);
 
             if (format1Matcher.matches()) {
-                TrackBlock block = new TrackBlock(trackData);
+                TrackBlock block = TrackBlock.parseBlock(trackData);
                 BlockType blockType = block.getType();
-                switch (blockType) {
-                    case CHECKPOINT:
-                        
-                        break;
-                
-                    default:
-                        break;
+                if (blockType == BlockType.CHECKPOINT) {
+                    checkpointCount++;
                 }
                 trackBlockBuffer.add(block);
             } else if (format2Matcher.matches()) {
@@ -119,5 +114,9 @@ public class Track implements Comparable<Track> {
 
     public HashSet<TrackBlock> getBlockSet() {
         return blockList;
+    }
+
+    public int getCheckpointCount() {
+        return checkpointCount;
     }
 }
