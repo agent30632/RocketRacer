@@ -26,7 +26,6 @@ public class MainMenuPanel extends JPanel {
         setPreferredSize(new Dimension(1920, 1080));
         setLayout(new BorderLayout());
         setBackground(new Color(50, 50, 50));
-        setFocusTraversalPolicy(null);
 
         JPanel leftSidePanel = new JPanel();
         leftSidePanel.setBackground(null);

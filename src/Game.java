@@ -214,17 +214,8 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         while (true) {
             // TODO: fix the bloody lag
-            long time1 = System.currentTimeMillis();
-            System.out.println(time1 + " aaaa");
             update();
             this.repaint();
-            long time2 = System.currentTimeMillis();
-            System.out.println(time2);
-            
-            if (time2 - time1 > 16) {
-                System.out.println("ruh roh");
-            }
-
             try {
                 Thread.sleep(1000 / FPS);
             } catch (Exception e) {
