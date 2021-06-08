@@ -1,7 +1,11 @@
 import java.awt.*;
+import java.awt.geom.*;
+import java.awt.image.*;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.regex.*;
+
+import javax.swing.ImageIcon;
 
 public class TrackBlock {
 
@@ -16,6 +20,23 @@ public class TrackBlock {
     public Rectangle hitbox;
 
     public boolean checkpointHit;
+
+    // Images
+    public static ImageIcon startBlock = new ImageIcon("assets/img/block_start.png");
+    public static ImageIcon checkpointBlock = new ImageIcon("assets/img/block_checkpoint.png");
+    public static ImageIcon finishBlock = new ImageIcon("assets/img/block_finish.png");
+    public static ImageIcon nocontrolBlock = new ImageIcon("assets/img/block_nocontrol.png");
+    public static ImageIcon resetBlock = new ImageIcon("assets/img/block_reset.png");
+    public static ImageIcon boostBlock = new ImageIcon("assets/img/block_boost.png");
+    
+    public static Image startBlockImage = startBlock.getImage();
+    public static Image checkpointBlockImage = checkpointBlock.getImage();
+    public static Image finishBlockImage = finishBlock.getImage();
+    public static Image nocontrolBlockImage = nocontrolBlock.getImage();
+    public static Image resetBlockImage = resetBlock.getImage();
+    public static Image boostBlockImage = boostBlock.getImage();
+
+
 
     public TrackBlock(BlockType type, int gridX, int gridY, BlockDirection direction) {
         this.type = type;
@@ -32,50 +53,52 @@ public class TrackBlock {
      * @param str the string to parse
      * @throws IllegalArgumentException if either the given coordinates are out of range
      */
-    public TrackBlock(String str) throws IllegalArgumentException {
+    public static TrackBlock parseBlock(String str) throws IllegalArgumentException {
         int typeDirSeperator = str.lastIndexOf(" ");
 
-        String direction = str.substring(typeDirSeperator + 1);
-        switch (direction) {
+        String directionStr = str.substring(typeDirSeperator + 1);
+        BlockDirection direction = null;
+        switch (directionStr) {
             case "UP":
-                this.direction = BlockDirection.UP;
+                direction = BlockDirection.UP;
                 break;
             case "RIGHT":
-                this.direction = BlockDirection.RIGHT;
+                direction = BlockDirection.RIGHT;
                 break;
             case "DOWN":
-                this.direction = BlockDirection.DOWN;
+                direction = BlockDirection.DOWN;
                 break;
             case "LEFT":
-                this.direction = BlockDirection.LEFT;
+                direction = BlockDirection.LEFT;
                 break;
         }
 
         String coordTypeData = str.substring(0, typeDirSeperator);
         int coordTypeSeparator = coordTypeData.lastIndexOf(" ");
 
-        String type = coordTypeData.substring(coordTypeSeparator + 1);
-        switch (type) {
+        String typeStr = coordTypeData.substring(coordTypeSeparator + 1);
+        BlockType type = null;
+        switch (typeStr) {
             case "START":
-                this.type = BlockType.START;
+                type = BlockType.START;
                 break;
             case "CHECKPOINT":
-                this.type = BlockType.CHECKPOINT;
+                type = BlockType.CHECKPOINT;
                 break;
             case "FINISH":
-                this.type = BlockType.FINISH;
+                type = BlockType.FINISH;
                 break;
             case "BOOST":
-                this.type = BlockType.BOOST;
+                type = BlockType.BOOST;
                 break;
             case "NOCONTROL":
-                this.type = BlockType.NOCONTROL;
+                type = BlockType.NOCONTROL;
                 break;
             case "RESET":
-                this.type = BlockType.RESET;
+                type = BlockType.RESET;
                 break;
             case "WALL":
-                this.type = BlockType.WALL;
+                type = BlockType.WALL;
                 break;
         }
 
@@ -86,16 +109,13 @@ public class TrackBlock {
         if (x < 0 || x >= Track.MAX_GRID_X) {
             throw new IllegalArgumentException();
         }
-        this.gridX = x;
 
         int y = Integer.parseInt(coordTokenizer.nextToken());
         if (y < 0 || y >= Track.MAX_GRID_Y) {
             throw new IllegalArgumentException();
         }
-        this.gridY = y;
 
-        this.checkpointHit = false;
-        this.hitbox = new Rectangle(gridX * BLOCK_WIDTH, gridY * BLOCK_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT);
+        return new TrackBlock(type, x, y, direction);
     }
 
     /**
@@ -199,32 +219,56 @@ public class TrackBlock {
             case START:
                 // TODO: actual graphics and images and whatnot
                 g.setColor(Color.GREEN);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                g.drawImage(startBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
                 break;
             
             case CHECKPOINT:
                 g.setColor(Color.YELLOW);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                g.drawImage(checkpointBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
                 break;
 
             case FINISH:
                 g.setColor(Color.RED);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                g.drawImage(finishBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
                 break;
 
             case BOOST:
                 g.setColor(Color.ORANGE);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                double rotation = 0;
+                switch (this.direction) {
+                    case UP:
+                        break;
+                    case RIGHT:
+                        rotation = Math.PI / 2;
+                        break;
+                    case DOWN:
+                        rotation = Math.PI;
+                        break;
+                    case LEFT:
+                        rotation = -Math.PI / 2;
+                        break;
+                }
+
+                g.rotate(rotation, hitbox.getCenterX(), hitbox.getCenterY());
+                
+                g.drawImage(boostBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
+                g.rotate(-rotation, hitbox.getCenterX(), hitbox.getCenterY());
                 break;
 
             case NOCONTROL:
                 g.setColor(Color.MAGENTA);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                g.drawImage(nocontrolBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
                 break;
             
             case RESET:
                 g.setColor(Color.CYAN);
-                g.fill(hitbox);
+                // g.fill(hitbox);
+                g.drawImage(resetBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
                 break;
         
             default:
@@ -232,6 +276,16 @@ public class TrackBlock {
         }
 
         g.setColor(previousColor);
+    }
+
+    @Override
+    public int hashCode() {
+        // TODO: should hashcode hash based on other factors too?
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + gridX;
+        result = prime * result + gridY;
+        return result;
     }
 
     @Override
@@ -249,6 +303,8 @@ public class TrackBlock {
             return false;
         return true;
     }
+
+    
 
     public BlockType getType() {
         return type;
