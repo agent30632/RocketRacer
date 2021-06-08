@@ -6,16 +6,21 @@
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.io.IOException;
 import java.util.*;
+
+import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class Game extends JPanel implements Runnable, KeyListener {
     // Static final variables (i.e. things that should never change)
     // buttery smooth pls
-    // TODO: FIX THE VERY CHUNKY BUTTER
     static final int FPS = 60;
+
+    // moosic
+    static File musicDir = new File("music/wav/");
+    static File[] musicList = musicDir.listFiles();
 
     // Game objects
     Thread gameThread;
@@ -25,6 +30,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
     Player player1;
     
     // Game state variables
+    boolean gameLoaded;
     boolean timeIsRunning;
     boolean startingState;
     boolean haveParsedFinish;
@@ -41,6 +47,12 @@ public class Game extends JPanel implements Runnable, KeyListener {
     Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
     Time personalBest;
 
+    // Audio elements
+    Clip music;
+    Clip startSound;
+    Clip engineSound;
+    boolean engineSoundPlaying;
+
     // Track elements
     Track track;
     String trackFilePath;
@@ -55,30 +67,43 @@ public class Game extends JPanel implements Runnable, KeyListener {
     Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
     Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
     Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
+    // Medals
+    ImageIcon bronzeMedal = new ImageIcon("assets/img/medal_bronze.png");
+    Image bronzeMedalImage;
+    ImageIcon silverMedal = new ImageIcon("assets/img/medal_silver.png");
+    Image silverMedalImage;
+    ImageIcon goldMedal = new ImageIcon("assets/img/medal_gold.png");
+    Image goldMedalImage;
+    ImageIcon authorMedal = new ImageIcon("assets/img/medal_author.png");
+    Image authorMedalImage;
+    ImageIcon noMedal = new ImageIcon("assets/img/medal_blank.png");
+    Image noMedalImage;
+
     JLabel restartLabel;
     JLabel exitLabel;
 
-    // Constructor for the panel
+    /**
+     * Loads an instance of Game, using the provided track file
+     * @param trackFile
+     */
     public Game(String trackFile) {
         // Setting preferences for the panel
+        gameLoaded = false;
         setPreferredSize(new Dimension(1920, 1080));
         setVisible(true);
         setBackground(Color.BLACK);
-        trackFilePath = trackFile;
+        this.trackFilePath = trackFile;
 
         // Loading the track
         try {
-            track = new Track(trackFilePath);
+            this.track = new Track(trackFilePath);
         } catch (FileNotFoundException e) {
-            // TODO: handle exception
             System.out.println("wuh oh");
             System.exit(1);
         } catch (IOException e) {
-            // TODO: handle exception
             System.out.println(" there was an");
             System.exit(1);
         } catch (IllegalArgumentException e) {
-            // TODO: handle exception
             System.out.println(" exception that i didn't figure out");
             System.exit(1);
         }
@@ -93,7 +118,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
         exitLabel = new JLabel("Exit", SwingConstants.LEFT);
         exitLabel.setBounds(
             (int) screenDimensions.getWidth() / 2 - 350, 
-            (int) screenDimensions.getHeight() / 2 + 170, 
+            (int) screenDimensions.getHeight() / 2 + 205, 
             350, 
             50
         );
@@ -103,13 +128,16 @@ public class Game extends JPanel implements Runnable, KeyListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // TODO: EXIT THE GAME AND RETURN TO REALITY
+                stopMusic();
+                Main.saveDataToFile();
+                Main.showMainMenu();
             }
         });
 
         restartLabel = new JLabel("Restart", SwingConstants.RIGHT);
         restartLabel.setBounds(
             (int) screenDimensions.getWidth() / 2, 
-            (int) screenDimensions.getHeight() / 2 + 170, 
+            (int) screenDimensions.getHeight() / 2 + 205, 
             350, 
             50
         );
@@ -118,20 +146,31 @@ public class Game extends JPanel implements Runnable, KeyListener {
         restartLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TODO Auto-generated method stub
                 player1.respawnToStart();
                 reset();
             }
         });
+
+        // Medal image loading
+        bronzeMedalImage = bronzeMedal.getImage();
+        silverMedalImage = silverMedal.getImage();
+        goldMedalImage = goldMedal.getImage();
+        authorMedalImage = authorMedal.getImage();
+        noMedalImage = noMedal.getImage();
+
+        // Idk probably a good idea to initialize this so I don't get NullPointerExceptions
+        engineSoundPlaying = false;
+
+        setDoubleBuffered(true);
 
         gameThread = new Thread(this);
         gameThread.start();
     }
 
     // As it says on the tin
-    // TODO: initialize with more than just the player
     public void initialize() {
         if (trackLoaded) {
+            // player initialization
             Rectangle startRectangle = track.getStartBlock().hitbox;
             double startX = startRectangle.getCenterX();
             double startY = startRectangle.getCenterY();
@@ -153,25 +192,39 @@ public class Game extends JPanel implements Runnable, KeyListener {
             
             player1 = new Player(startX, startY, rotation, track.getStartBlock());
         }
-        
+        // Camera obj
         camera = new Camera(300, 300);
+
+        // Notifies paintComponent that painting is a good idea
+        // This was necessary to not have 10231976 NullPointerExceptions at the start
+        gameLoaded = true;
 
         // Timer stuff
         timeStart = System.currentTimeMillis();
         timeIsRunning = true;
+
+        playMusic();
 
         reset();
     }
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
         initialize();
 
         while (true) {
             // TODO: fix the bloody lag
+            long time1 = System.currentTimeMillis();
+            System.out.println(time1 + " aaaa");
             update();
             this.repaint();
+            long time2 = System.currentTimeMillis();
+            System.out.println(time2);
+            
+            if (time2 - time1 > 16) {
+                System.out.println("ruh roh");
+            }
+
             try {
                 Thread.sleep(1000 / FPS);
             } catch (Exception e) {
@@ -184,6 +237,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // Player update functions
         player1.update();
         player1.keepInBounds();
+        // Block collisions
         if (trackLoaded) {
             for (TrackBlock block : trackBlockData) {
                 player1.checkBlockIntersection(block, track);
@@ -191,33 +245,37 @@ public class Game extends JPanel implements Runnable, KeyListener {
             player1.checkBlockIntersection(track.getStartBlock(), track);
             player1.checkBlockIntersection(track.getFinishBlock(), track);
         }
-
+        
+        // Camera only updates position if the player hasn't finished
+        // Idk I think it looks neat
         if (!player1.isFinished) {
             camera.update(player1, this.getWidth(), this.getHeight());
         }
 
-        if (timeIsRunning && !(player1.isFinished)) {
+        // Timer object only does its thing if the player has not finished
+        if (timeIsRunning && !player1.isFinished) {
             timeElapsed = System.currentTimeMillis() - timeStart;
             timeObj = new Time(timeElapsed);
         }
 
+        // Player finish is processed here
         if (player1.isFinished && !haveParsedFinish) {
-            // TODO: parse finish
             Time latestTime = timeObj;
             if (personalBest != null) {
+                // If PB exists
                 if (timeObj.compareTo(personalBest) < 0) {
+                    // new PB only if it's better
                     Main.addPersonalData(track.getTrackID(), latestTime);
                     personalBest = latestTime;
-                    Main.saveDataToFile();
                 }
             } else {
+                // If PB does not exist, add it
                 Main.addPersonalData(track.getTrackID(), timeObj);
                 personalBest = latestTime;
-                // TODO: don't always save to file when you finish
-                // Maybe just when you exit or something
-                Main.saveDataToFile();
             }
             
+            // NOTE: PBs are only saved upon exiting the level
+            // This means if your game crashes before you exit to menu, say goodbye to your super poggers epic personal best time
             haveParsedFinish = true;
         }
     }
@@ -258,7 +316,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // Rendering settings
         RenderingHints antiAliasing = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2D.setRenderingHints(antiAliasing);
-        RenderingHints imageInterp = new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        RenderingHints imageInterp = new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g2D.setRenderingHints(imageInterp);
         RenderingHints textAntiAliasing = new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
         g2D.setRenderingHints(textAntiAliasing);
@@ -266,102 +324,141 @@ public class Game extends JPanel implements Runnable, KeyListener {
         super.paintComponent(g);
 
         // Game draw calls
-        g2D.translate(camera.getX(), camera.getY()); // god bless this method        
+        if (gameLoaded) {
+            g2D.translate(camera.getX(), camera.getY()); // god bless this method        
 
-        // Background
-        g2D.setColor(Color.LIGHT_GRAY);
-        g2D.fill(playableArea);
+            // Background
+            g2D.setColor(Color.LIGHT_GRAY);
+            g2D.fill(playableArea);
 
-        // Track blocks
-        if (trackLoaded) {
-            for (TrackBlock block : trackBlockData) {
-                block.draw(g2D);
-            }
-            track.getStartBlock().draw(g2D);
-            track.getFinishBlock().draw(g2D);
-        }
-
-        // Debug: player hitbox
-        // g2D.setColor(Color.WHITE);
-        // g2D.fill(player1.hitbox);
-        // Player drawing
-        player1.draw(g2D);        
-
-        // UI elements
-        g2D.translate(-camera.getX(), -camera.getY());
-
-        // Debug elements
-        g2D.setColor(Color.WHITE);
-        // g2D.drawString("countdown thing = " + countdownTimesCounted, 1000, 50);
-        // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
-        // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
-        // g2D.drawString("Position: x = " + player1.posX + " y = " + player1.posY, 50, 50);
-        // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
-
-        // UI elements
-        if (startingState) {
-            drawCenteredText(g2D, "Press any key to start...", 72, uiTextBig);
-        }
-        
-        if (!player1.isFinished) {
-            // Anything in here only displays if the player is still going
-            if (player1.isBoosting) {
-                drawCenteredText(g2D, "BOOST", 72, uiTextBig);
-            } else if (player1.isNoControl && !startingState) {
-                drawCenteredText(g2D, "NO CONTROL", 72, uiTextBig);
+            // Track blocks
+            if (trackLoaded) {
+                for (TrackBlock block : trackBlockData) {
+                    block.draw(g2D);
+                }
+                track.getStartBlock().draw(g2D);
+                track.getFinishBlock().draw(g2D);
             }
 
-            // Rectangle below time & cp count
-            Color prevColor = g2D.getColor();
-            g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
-            g2D.fillRoundRect(
-                ((int) screenDimensions.getWidth() - 288) / 2, 
-                ((int) screenDimensions.getHeight() - 112), 
-                288, 162, 50, 50
-            );
-            g2D.setColor(prevColor);
+            // Debug: player hitbox
+            // g2D.setColor(Color.WHITE);
+            // g2D.fill(player1.hitbox);
+            // Player drawing
+            player1.draw(g2D);        
 
-                
-            if (timeObj != null) {
-                drawCenteredText(
-                    g2D, 
-                    timeObj.toString(), 
-                    (int) screenDimensions.getHeight() - 64, 
-                    uiTextMediumHighlight
-                );
-            }
-            drawCenteredText(
-                g2D, 
-                String.format("%d/%d", player1.checkpointCount, track.getCheckpointCount()), 
-                (int) screenDimensions.getHeight() - 112, 
-                uiTextSmallItalics
-            );
-        } else {
-            // Game finininininsh UI
-            Color prevColor = g2D.getColor();
-            g2D.setColor(new Color(0f, 0f, 0f, 0.75f));
-            g2D.fillRoundRect(
-                ((int) screenDimensions.getWidth() - 800) / 2, 
-                ((int) screenDimensions.getHeight() - 500) / 2, 
-                800, 500, 50, 50
-            );
+            // UI elements
+            g2D.translate(-camera.getX(), -camera.getY());
 
+            // Debug elements
             g2D.setColor(Color.WHITE);
-            g2D.setFont(uiTextMediumHighlight);
-            drawCenteredText(g2D, "Time: " + timeObj, 300, uiTextMediumHighlight);
-            if (personalBest == null) {
-                drawCenteredText(g2D, "Personal Best: " + new Time(0, 0, 0), 375, uiTextMediumHighlight);
-            } else {
-                drawCenteredText(g2D, "Personal Best: " + personalBest, 375, uiTextMediumHighlight);
+            // g2D.drawString("countdown thing = " + countdownTimesCounted, 1000, 50);
+            // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
+            // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
+            // g2D.drawString("Grid: x = " + player1.gridX + " y = " + player1.gridY, 50, 50);
+            // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
+
+            // UI elements
+            if (startingState) {
+                drawCenteredText(g2D, "Press any key to start...", 72, uiTextBig);
             }
             
+            if (!player1.isFinished) {
+                // Anything in here only displays if the player is still going
+                if (player1.isBoosting) {
+                    drawCenteredText(g2D, "BOOST", 72, uiTextBig);
+                } else if (player1.isNoControl && !startingState) {
+                    drawCenteredText(g2D, "NO CONTROL", 72, uiTextBig);
+                }
 
-            add(exitLabel);
-            add(restartLabel);
+                // Rectangle below time & cp count
+                Color prevColor = g2D.getColor();
+                g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
+                g2D.fillRoundRect(
+                    ((int) screenDimensions.getWidth() - 288) / 2, 
+                    ((int) screenDimensions.getHeight() - 112), 
+                    288, 162, 50, 50
+                );
+                g2D.setColor(prevColor);
 
-            g2D.setColor(prevColor);
+                    
+                if (timeObj != null) {
+                    drawCenteredText(
+                        g2D, 
+                        timeObj.toString(), 
+                        (int) screenDimensions.getHeight() - 64, 
+                        uiTextMediumHighlight
+                    );
+                }
+                drawCenteredText(
+                    g2D, 
+                    String.format("%d/%d", player1.checkpointCount, track.getCheckpointCount()), 
+                    (int) screenDimensions.getHeight() - 112, 
+                    uiTextSmallItalics
+                );
+            } else {
+                // Game finish UI
+                // transparent-ish black background
+                Color prevColor = g2D.getColor();
+                g2D.setColor(new Color(0f, 0f, 0f, 0.75f));
+                g2D.fillRoundRect(
+                    ((int) screenDimensions.getWidth() - 800) / 2, 
+                    ((int) screenDimensions.getHeight() - 550) / 2, 
+                    800, 550, 50, 50
+                );
+
+                // text
+                g2D.setColor(Color.WHITE);
+                g2D.setFont(uiTextMediumHighlight);
+                drawCenteredText(g2D, "Time: " + timeObj, 290, uiTextMediumHighlight);
+                if (personalBest == null) {
+                    drawCenteredText(g2D, "Personal Best: " + new Time(0, 0, 0), 365, uiTextMediumHighlight);
+                } else {
+                    drawCenteredText(g2D, "Personal Best: " + personalBest, 365, uiTextMediumHighlight);
+                }
+
+                int topTextOffset = 530;
+                int bottomTextOffset = 640;
+                // This entire block of text feels scuffed
+                if (personalBest.compareTo(track.getAuthorTime()) < 0) {
+                    // you beat the author time, wowie!
+                    g2D.drawImage(authorMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawString("Congratulations!", (int) (screenDimensions.getWidth() / 2 - 30), 515);
+                    g2D.drawString("You've beat the", (int) (screenDimensions.getWidth() / 2 - 30), 610);
+                    g2D.drawString("author medal!", (int) (screenDimensions.getWidth() / 2 - 30), 665);
+                } else if (personalBest.compareTo(track.getGoldTime()) < 0) {
+                    g2D.drawImage(goldMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
+                    g2D.drawString(track.getAuthorTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
+                } else if (personalBest.compareTo(track.getSilverTime()) < 0) {
+                    g2D.drawImage(silverMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
+                    g2D.drawString(track.getGoldTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
+                } else if (personalBest.compareTo(track.getBronzeTime()) < 0) {
+                    g2D.drawImage(bronzeMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
+                    g2D.drawString(track.getSilverTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
+                } else {
+                    g2D.drawImage(noMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
+                    g2D.drawString(track.getBronzeTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
+                }
+
+                // buttons
+                add(exitLabel);
+                add(restartLabel);
+
+                g2D.setColor(prevColor);
+            }
+        } else {
+            g2D.setColor(Color.WHITE);
+            g2D.setFont(uiTextBig);
+            g2D.drawString("Loading...", (int) (screenDimensions.getWidth() - 400), (int) screenDimensions.getHeight() - 80);
         }
-        
     }
 
     public void drawCenteredText(Graphics g, String text, int yPos, Font font) {
@@ -380,6 +477,53 @@ public class Game extends JPanel implements Runnable, KeyListener {
         g.setFont(oldFont);
     }
 
+    public void playMusic() {
+        try {
+            Random rand = new Random();
+            File file = musicList[rand.nextInt(musicList.length)];
+            music = AudioSystem.getClip();
+
+            // getAudioInputStream() also accepts a File or InputStream
+            AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            music.open(ais);
+            FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue(-15);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+            //TODO: handle exception
+            e.printStackTrace();
+        }
+    }
+
+    public void stopMusic() {
+        music.stop();
+        music.close();
+    }
+
+    public void playEngineSound() {
+        try {
+            // Engine audio courtesy of Stingray Productions on YouTube
+            // https://www.youtube.com/watch?v=MZwsO6H_FYo
+            File file = new File("assets/audio/player_engine.wav");
+            engineSound = AudioSystem.getClip();
+
+            // getAudioInputStream() also accepts a  File or InputStream
+            AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            engineSound.open(ais);
+            FloatControl gainControl = (FloatControl) engineSound.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue(-15);
+            engineSound.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+            //TODO: handle exception
+            e.printStackTrace();
+        }
+    }
+
+    public void stopEngineSound() {
+        engineSound.stop();
+        engineSound.close();
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
         // TODO Auto-generated method stub
@@ -396,6 +540,10 @@ public class Game extends JPanel implements Runnable, KeyListener {
         if (!player1.isNoControl) {
             if (key == KeyEvent.VK_W) {
                 player1.isAccelerating = true;
+                if (!engineSoundPlaying) {
+                    playEngineSound();
+                    engineSoundPlaying = true;
+                }
             }
             if (key == KeyEvent.VK_SHIFT) {
                 player1.isBraking = true;
@@ -423,6 +571,8 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         if (key == KeyEvent.VK_W) {
             player1.isAccelerating = false;
+            stopEngineSound();
+            engineSoundPlaying = false;
         }
         if (key == KeyEvent.VK_SHIFT) {
             player1.isBraking = false;

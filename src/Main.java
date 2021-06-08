@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -5,8 +6,17 @@ import javax.swing.*;
 public class Main {
     final static String GAME_NAME = "Rocket Racer";
 
-    MainMenuPanel menuPanel = new MainMenuPanel();
+    static ImageIcon gameIcon = new ImageIcon("assets/img/game_icon.png");
+    static Image gameIconImage = gameIcon.getImage();
+
     static HashMap<String, Time> personalBests = new HashMap<>();
+    static MainMenuPanel menuPanel;
+    static OptionsPanel optionsPanel;
+    static PlayPanel playPanel;
+    static Game gamePanel;
+    static HelpPanel helpPanel;
+
+    static JFrame frame;
     
     public static void loadPersonalData() {
         try {
@@ -25,12 +35,10 @@ public class Main {
 
             bufIn.close();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             File newSave = new File("save/data.save");
             try {
                 newSave.createNewFile();
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } catch (IOException e) {
@@ -60,7 +68,18 @@ public class Main {
     }
 
     public static void showMainMenu() {
-        // TODO: main menu show
+        frame.dispose();
+        frame = new JFrame(GAME_NAME);
+        frame.setUndecorated(true);
+        frame.setIconImage(gameIconImage);
+
+        frame.add(menuPanel);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
+        frame.setResizable(false);
+        frame.setVisible(true);
     }
 
     public static void showOptions() {
@@ -69,22 +88,43 @@ public class Main {
 
     public static void showGame(String trackFilePath) {
         // TODO: new game time bois
-    }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame(GAME_NAME);
-
-        loadPersonalData();
-
-        // TODO: level loading
-        Game game = new Game("tracks/A01.track");
-
+        frame.dispose();
+        frame = new JFrame(GAME_NAME);
         frame.setUndecorated(true);
-        frame.add(game);
-        frame.addKeyListener(game);
+        frame.setIconImage(gameIconImage);
+
+        gamePanel = new Game("tracks/testTrack.track");
+        frame.add(gamePanel);
+        frame.addKeyListener(gamePanel);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
+        frame.setResizable(false);
+        frame.setVisible(true);
+    }
+
+    public static void showTutorial() {
+        frame.dispose();
+        frame = new JFrame(GAME_NAME);
+        frame.setUndecorated(true);
+        frame.setIconImage(gameIconImage);
+    }
+
+    public static void main(String[] args) {
+        frame = new JFrame(GAME_NAME);
+
+        loadPersonalData();
+
+        menuPanel = new MainMenuPanel();
+
+        frame.setUndecorated(true);
+        frame.setIconImage(gameIconImage);
+        frame.add(menuPanel);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
         frame.setResizable(false);
         frame.setVisible(true);
     }

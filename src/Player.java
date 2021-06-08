@@ -6,7 +6,7 @@ public class Player {
     // Static final variables (i.e. things that should never change during the game)
     static final double ACCELERATION = 0.5;
     static final double BOOST_ACCELERATION = 0.5; // ADDED onto acceleration value
-    static final double ROTATIONRATE = 5;
+    static final double ROTATION_RATE = 5;
     static final double MIN_SPEED = 0.25;
 
     static final double BRAKING = 0.95; // velocities are multiplied by this rate every frame (i.e. 0.8 = 20% velocity loss)
@@ -24,6 +24,9 @@ public class Player {
     // position
     public double posX;
     public double posY;
+
+    public int gridX;
+    public int gridY;
 
     // direction
     public double direction;
@@ -66,6 +69,9 @@ public class Player {
         this.checkpointCount = 0;
         this.startBlock = startBlock;
 
+        this.gridX = startBlock.gridX;
+        this.gridY = startBlock.gridY;
+
         this.isFinished = false;
 
         hitbox = new Rectangle((int) posX, (int) posY, PLAYER_WIDTH, PLAYER_HEIGHT);
@@ -80,10 +86,10 @@ public class Player {
         // duh
         if (!isNoControl) {
             if (isTurningRight) {
-                direction -= ROTATIONRATE;
+                direction -= ROTATION_RATE;
             }
             if (isTurningLeft) {
-                direction += ROTATIONRATE;
+                direction += ROTATION_RATE;
             }
     
             if (direction < -180) {
@@ -95,16 +101,17 @@ public class Player {
             if (isAccelerating) {
                 // Oh geez trigonometry is pain
                 // TODO: reduce the number of trig calculations
-                velX += ACCELERATION * Math.cos(direction * Math.PI / 180);
-                velY += ACCELERATION * Math.sin(direction * Math.PI / 180);
+                double cos = Math.cos(direction * Math.PI / 180);
+                double sin = Math.sin(direction * Math.PI / 180);
+
+                velX += ACCELERATION * cos;
+                velY += ACCELERATION * sin;
                 if (isBoosting) {
                     // TODO: reduce the number of trig calculations
-                    velX += BOOST_ACCELERATION * Math.cos(direction * Math.PI / 180);
-                    velY += BOOST_ACCELERATION * Math.sin(direction * Math.PI / 180);
+                    velX += BOOST_ACCELERATION * cos;
+                    velY += BOOST_ACCELERATION * sin;
                 }
-            }
-    
-            if (isBraking) {
+            } else if (isBraking) {
                 velX *= BRAKING;
                 velY *= BRAKING;    
                 // Zeroes out velocity if it goes below a certain threshold
@@ -119,6 +126,10 @@ public class Player {
 
         posX += velX;
         posY -= velY;
+
+        this.gridX = (int) posX / TrackBlock.BLOCK_WIDTH;
+        this.gridY = (int) posY / TrackBlock.BLOCK_HEIGHT;
+
         hitbox.setRect(posX - PLAYER_WIDTH / 2 + PLAYER_HITBOXTRIM, posY - PLAYER_HEIGHT / 2 + PLAYER_HITBOXTRIM, PLAYER_WIDTH - PLAYER_HITBOXTRIM * 2, PLAYER_HEIGHT - PLAYER_HITBOXTRIM * 2);
     }
 
@@ -141,6 +152,7 @@ public class Player {
     public void checkCollision(Rectangle rect) {
         // NOTE: i yoinked this code from Stanley's game examples (the MovingAndCollisions one)
         // o7 to Stanley and his code
+
         if (hitbox.intersects(rect)) {
 			//stop the rect from moving
 			double left1 = hitbox.getX();
@@ -187,51 +199,49 @@ public class Player {
      * @param block the block to check intersections with
      */
     public void checkBlockIntersection(TrackBlock block, Track track) {
-        if (hitbox.intersects(block.hitbox)) {
-            switch (block.getType()) {
-                case WALL:
-                    checkCollision(block.hitbox);
-                    break;
-
-                case START:
-                    // does nothing upon intersection
-                    break;
-                
-                case CHECKPOINT:
-                    // TODO: checkpoint logic
-                    if (block.checkpointHit == false) {
-                        this.checkpointCount++;
-                        block.checkpointHit = true;
-                        this.lastCheckpoint = block;
-                        // TODO: checkpoint respawns
-                    }
-                    break;
+        // If this block is adjacent to the player's current position
+        // i.e. x within +- 1, y within +- 1
+        // Should hopefully optimize collision calculations
+        if (Math.abs(this.gridX - block.gridX) <= 1 && Math.abs(this.gridY - block.gridY) <= 1) {
+            if (hitbox.intersects(block.hitbox)) {
+                switch (block.getType()) {
+                    case WALL:
+                        checkCollision(block.hitbox);
+                        break;
     
-                case FINISH:
-                    // TODO: FINISH LOGIC
-                    if (this.checkpointCount == track.getCheckpointCount()) {
-                        this.isFinished = true;
-                    }
-                    break;
-    
-                case BOOST:
-                    // TODO: boost
-                    this.isBoosting = true;
-                    break;
-    
-                case NOCONTROL:
-                    // TODO: no control
-                    this.isNoControl = true;
-                    break;
-                
-                case RESET:
-                    this.isNoControl = false;
-                    this.isBoosting = false;
-                    break;
+                    case START:
+                        // does nothing upon intersection
+                        break;
+                    
+                    case CHECKPOINT:
+                        if (block.checkpointHit == false) {
+                            this.checkpointCount++;
+                            block.checkpointHit = true;
+                            this.lastCheckpoint = block;
+                        }
+                        break;
+        
+                    case FINISH:
+                        if (this.checkpointCount == track.getCheckpointCount()) {
+                            this.isFinished = true;
+                        }
+                        break;
+        
+                    case BOOST:
+                        this.isBoosting = true;
+                        break;
+        
+                    case NOCONTROL:
+                        this.isNoControl = true;
+                        break;
+                    
+                    case RESET:
+                        this.isNoControl = false;
+                        this.isBoosting = false;
+                        break;
+                }
             }
-        } else {
-            // block interactions that are only on when intersecting are reset here
-        }
+        }        
     }
 
     public void keepInBounds() {
@@ -281,7 +291,6 @@ public class Player {
     }
 
     public void respawnToStart() {
-        // TODO: fully reset everything (i.e. go agane)
         velX = 0;
         velY = 0;
 
