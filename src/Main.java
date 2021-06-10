@@ -107,7 +107,7 @@ public class Main {
         frame.setUndecorated(true);
         frame.setIconImage(gameIconImage);
 
-        gamePanel = new Game("tracks/testTrack.track");
+        gamePanel = new Game(trackFilePath);
         frame.add(gamePanel);
         frame.addKeyListener(gamePanel);
         frame.pack();
@@ -159,6 +159,15 @@ public class Main {
         frame.setFocusTraversalPolicy(null);
         frame.setResizable(false);
         frame.setVisible(true);
+    }
+
+    public static void exitGame() {
+        frame.dispose();
+        frame = new JFrame(GAME_NAME);
+        frame.setUndecorated(true);
+        frame.setIconImage(gameIconImage);
+
+        showPlay();
     }
 
     public static void main(String[] args) {

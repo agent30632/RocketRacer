@@ -85,6 +85,13 @@ public class PlayPanel extends JPanel {
         testLabel.setFocusable(false);
         testLabel.setAlignmentY(0f);
         testLabel.setAlignmentX(0f);
+        testLabel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                Main.showGame("tracks/testTrack.track");
+            }
+        });
 
         selectionPanel.add(testLabel);
 

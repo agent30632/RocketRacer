@@ -78,6 +78,13 @@ public class Game extends JPanel implements Runnable, KeyListener {
     JLabel exitLabel;
 
     /**
+     * Creates an empty game panel, with zero functionality. Exists only to avoid NullPointerExceptions.
+     */
+    public Game() {
+
+    }
+
+    /**
      * Loads an instance of Game, using the provided track file
      * @param trackFile
      */
@@ -125,7 +132,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 // TODO: EXIT THE GAME AND RETURN TO REALITY
                 stopMusic();
                 Main.saveDataToFile();
-                Main.showMainMenu();
+                Main.exitGame();
             }
         });
 
@@ -468,8 +475,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     public void playMusic() {
         try {
-            Random rand = new Random();
-            int randInt = rand.nextInt(musicList.length);
+            int randInt = (int) (Math.random() * musicList.length);
             System.out.println(randInt);
             File file = musicList[randInt];
             music = AudioSystem.getClip();
@@ -478,7 +484,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             music.open(ais);
             FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
-            gainControl.setValue(-20);
+            gainControl.setValue(-15);
             music.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
             //TODO: handle exception
