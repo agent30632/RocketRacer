@@ -13,12 +13,6 @@ public class MainMenuPanel extends JPanel {
     static JButton optionsButton;
     static JButton exitButton;
 
-    static Font uiTextBig = new Font(Font.SANS_SERIF, Font.BOLD, 64);
-    static Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
-    static Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
-    static Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
-    static Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
-
     public MainMenuPanel() {
         super(true);
 
@@ -31,36 +25,35 @@ public class MainMenuPanel extends JPanel {
         leftSidePanel.setBackground(null);
         leftSidePanel.setLayout(new BoxLayout(leftSidePanel, BoxLayout.PAGE_AXIS));
 
-        Border buttonBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 5), BorderFactory.createEmptyBorder(2, 15, 2, 15));
-
         logoLabel = new JLabel(gameLogo);
         
         playButton = new JButton("Play");
-        playButton.setFont(uiTextBig);
+        playButton.setFont(Main.uiTextBig);
         playButton.setForeground(Color.WHITE);
         playButton.setBackground(Color.BLACK);
-        playButton.setBorder(buttonBorder);
+        playButton.setBorder(Main.buttonBorder);
         playButton.setFocusable(false);
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
-                Main.showGame("tracks/testTrack.track");   
+                // Main.showGame("tracks/testTrack.track");
+                Main.showPlay();
             }
         });
 
-        optionsButton = new JButton("Options");
-        optionsButton.setFont(uiTextBig);
-        optionsButton.setForeground(Color.WHITE);
-        optionsButton.setBackground(Color.BLACK);
-        optionsButton.setBorder(buttonBorder);
-        optionsButton.setFocusable(false);
+        tutorialButton = new JButton("Tutorial");
+        tutorialButton.setFont(Main.uiTextBig);
+        tutorialButton.setForeground(Color.WHITE);
+        tutorialButton.setBackground(Color.BLACK);
+        tutorialButton.setBorder(Main.buttonBorder);
+        tutorialButton.setFocusable(false);
 
         exitButton = new JButton("Exit");
-        exitButton.setFont(uiTextBig);
+        exitButton.setFont(Main.uiTextBig);
         exitButton.setForeground(Color.WHITE);
         exitButton.setBackground(Color.BLACK);
-        exitButton.setBorder(buttonBorder);
+        exitButton.setBorder(Main.buttonBorder);
         exitButton.setFocusable(false);
         exitButton.addActionListener(new ActionListener() {
             @Override
@@ -72,9 +65,10 @@ public class MainMenuPanel extends JPanel {
 
         leftSidePanel.add(logoLabel);
         leftSidePanel.add(Box.createRigidArea(new Dimension(0, 100)));
+        // leftSidePanel.add(Box.createVerticalGlue());
         leftSidePanel.add(playButton);
         leftSidePanel.add(Box.createRigidArea(new Dimension(0, 30)));
-        leftSidePanel.add(optionsButton);
+        leftSidePanel.add(tutorialButton);
         leftSidePanel.add(Box.createRigidArea(new Dimension(0, 30)));
         leftSidePanel.add(exitButton);
 

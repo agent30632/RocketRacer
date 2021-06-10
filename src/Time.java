@@ -2,7 +2,7 @@ import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Time implements Comparable<Time>{
+public class Time implements Comparable<Time> {
     private int minutes;
     private int seconds;
     private int milliseconds;

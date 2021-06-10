@@ -62,11 +62,6 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     // UI Elements
     Time timeObj = null;
-    Font uiTextBig = new Font(Font.SANS_SERIF, Font.BOLD, 64);
-    Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
-    Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
-    Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
-    Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
     // Medals
     ImageIcon bronzeMedal = new ImageIcon("assets/img/medal_bronze.png");
     Image bronzeMedalImage;
@@ -122,7 +117,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             350, 
             50
         );
-        exitLabel.setFont(uiTextMedium);
+        exitLabel.setFont(Main.uiTextMedium);
         exitLabel.setForeground(Color.WHITE);
         exitLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -141,7 +136,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             350, 
             50
         );
-        restartLabel.setFont(uiTextMedium);
+        restartLabel.setFont(Main.uiTextMedium);
         restartLabel.setForeground(Color.WHITE);
         restartLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -350,15 +345,15 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
             // UI elements
             if (startingState) {
-                drawCenteredText(g2D, "Press any key to start...", 72, uiTextBig);
+                drawCenteredText(g2D, "Press any key to start...", 72, Main.uiTextBig);
             }
             
             if (!player1.isFinished) {
                 // Anything in here only displays if the player is still going
                 if (player1.isBoosting) {
-                    drawCenteredText(g2D, "BOOST", 72, uiTextBig);
+                    drawCenteredText(g2D, "BOOST", 72, Main.uiTextBig);
                 } else if (player1.isNoControl && !startingState) {
-                    drawCenteredText(g2D, "NO CONTROL", 72, uiTextBig);
+                    drawCenteredText(g2D, "NO CONTROL", 72, Main.uiTextBig);
                 }
 
                 // Rectangle below time & cp count
@@ -377,14 +372,14 @@ public class Game extends JPanel implements Runnable, KeyListener {
                         g2D, 
                         timeObj.toString(), 
                         (int) screenDimensions.getHeight() - 64, 
-                        uiTextMediumHighlight
+                        Main.uiTextMediumHighlight
                     );
                 }
                 drawCenteredText(
                     g2D, 
                     String.format("%d/%d", player1.checkpointCount, track.getCheckpointCount()), 
                     (int) screenDimensions.getHeight() - 112, 
-                    uiTextSmallItalics
+                    Main.uiTextSmallItalics
                 );
             } else {
                 // Game finish UI
@@ -399,44 +394,47 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
                 // text
                 g2D.setColor(Color.WHITE);
-                g2D.setFont(uiTextMediumHighlight);
-                drawCenteredText(g2D, "Time: " + timeObj, 290, uiTextMediumHighlight);
+                g2D.setFont(Main.uiTextMediumHighlight);
+                drawCenteredText(g2D, "Time: " + timeObj, 290, Main.uiTextMediumHighlight);
                 if (personalBest == null) {
-                    drawCenteredText(g2D, "Personal Best: " + new Time(0, 0, 0), 365, uiTextMediumHighlight);
+                    drawCenteredText(g2D, "Personal Best: " + new Time(0, 0, 0), 365, Main.uiTextMediumHighlight);
                 } else {
-                    drawCenteredText(g2D, "Personal Best: " + personalBest, 365, uiTextMediumHighlight);
+                    drawCenteredText(g2D, "Personal Best: " + personalBest, 365, Main.uiTextMediumHighlight);
                 }
 
                 int topTextOffset = 530;
                 int bottomTextOffset = 640;
                 // This entire block of text feels scuffed
+                String nextMedal = null;
+                Image medalImage = null;
                 if (personalBest.compareTo(track.getAuthorTime()) < 0) {
-                    // you beat the author time, wowie!
+                    nextMedal = "author medal";
+                    medalImage = authorMedalImage;
+                } else if (personalBest.compareTo(track.getGoldTime()) < 0) {
+                    nextMedal = track.getAuthorTime().toString();
+                    medalImage = goldMedalImage;
+                } else if (personalBest.compareTo(track.getSilverTime()) < 0) {
+                    nextMedal = track.getGoldTime().toString();
+                    medalImage = silverMedalImage;
+                } else if (personalBest.compareTo(track.getBronzeTime()) < 0) {
+                    nextMedal = track.getSilverTime().toString();
+                    medalImage = bronzeMedalImage;
+                } else {
+                    nextMedal = track.getBronzeTime().toString();
+                    medalImage = noMedalImage;
+                }
+
+                if (nextMedal.compareTo("author medal") == 0 && medalImage == authorMedalImage) {
                     g2D.drawImage(authorMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
-                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.setFont(Main.uiTextMediumHighlight);
                     g2D.drawString("Congratulations!", (int) (screenDimensions.getWidth() / 2 - 30), 515);
                     g2D.drawString("You've beat the", (int) (screenDimensions.getWidth() / 2 - 30), 610);
                     g2D.drawString("author medal!", (int) (screenDimensions.getWidth() / 2 - 30), 665);
-                } else if (personalBest.compareTo(track.getGoldTime()) < 0) {
-                    g2D.drawImage(goldMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
-                    g2D.setFont(uiTextMediumHighlight);
-                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
-                    g2D.drawString(track.getAuthorTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
-                } else if (personalBest.compareTo(track.getSilverTime()) < 0) {
-                    g2D.drawImage(silverMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
-                    g2D.setFont(uiTextMediumHighlight);
-                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
-                    g2D.drawString(track.getGoldTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
-                } else if (personalBest.compareTo(track.getBronzeTime()) < 0) {
-                    g2D.drawImage(bronzeMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
-                    g2D.setFont(uiTextMediumHighlight);
-                    g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
-                    g2D.drawString(track.getSilverTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
                 } else {
-                    g2D.drawImage(noMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
-                    g2D.setFont(uiTextMediumHighlight);
+                    g2D.drawImage(medalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(Main.uiTextMediumHighlight);
                     g2D.drawString("Next medal:", (int) (screenDimensions.getWidth() / 2 - 30), topTextOffset);
-                    g2D.drawString(track.getBronzeTime().toString(), (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
+                    g2D.drawString(nextMedal, (int) (screenDimensions.getWidth() / 2 - 30), bottomTextOffset);
                 }
 
                 // buttons
@@ -447,7 +445,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             }
         } else {
             g2D.setColor(Color.WHITE);
-            g2D.setFont(uiTextBig);
+            g2D.setFont(Main.uiTextBig);
             g2D.drawString("Loading...", (int) (screenDimensions.getWidth() - 400), (int) screenDimensions.getHeight() - 80);
         }
     }
@@ -471,14 +469,16 @@ public class Game extends JPanel implements Runnable, KeyListener {
     public void playMusic() {
         try {
             Random rand = new Random();
-            File file = musicList[rand.nextInt(musicList.length)];
+            int randInt = rand.nextInt(musicList.length);
+            System.out.println(randInt);
+            File file = musicList[randInt];
             music = AudioSystem.getClip();
 
             // getAudioInputStream() also accepts a File or InputStream
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             music.open(ais);
             FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
-            gainControl.setValue(-15);
+            gainControl.setValue(-20);
             music.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
             //TODO: handle exception
@@ -502,7 +502,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             engineSound.open(ais);
             FloatControl gainControl = (FloatControl) engineSound.getControl(FloatControl.Type.MASTER_GAIN);
-            gainControl.setValue(-15);
+            gainControl.setValue(-10);
             engineSound.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
             //TODO: handle exception

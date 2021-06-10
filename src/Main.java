@@ -2,6 +2,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.border.*;
 
 public class Main {
     final static String GAME_NAME = "Rocket Racer";
@@ -10,13 +11,26 @@ public class Main {
     static Image gameIconImage = gameIcon.getImage();
 
     static HashMap<String, Time> personalBests = new HashMap<>();
+
+    // Menus
     static MainMenuPanel menuPanel;
-    static OptionsPanel optionsPanel;
     static PlayPanel playPanel;
     static Game gamePanel;
-    static HelpPanel helpPanel;
+    static TutorialPanel tutorialPanel;
 
+    // Main frame
     static JFrame frame;
+
+    // Standardized UI elements
+    // Fonts
+    static Font uiTextBig = new Font(Font.SANS_SERIF, Font.BOLD, 64);
+    static Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
+    static Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
+    static Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
+    static Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
+    // Button border
+    static Border buttonBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 5), BorderFactory.createEmptyBorder(2, 15, 2, 15));
+    static Border levelButtonBorder = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20), buttonBorder);
     
     public static void loadPersonalData() {
         try {
@@ -68,22 +82,22 @@ public class Main {
     }
 
     public static void showMainMenu() {
-        frame.dispose();
-        frame = new JFrame(GAME_NAME);
-        frame.setUndecorated(true);
-        frame.setIconImage(gameIconImage);
+        // frame.dispose();
+        // frame = new JFrame(GAME_NAME);
+        // frame.setUndecorated(true);
+        // frame.setIconImage(gameIconImage);
+        frame.remove(playPanel);
+        frame.remove(tutorialPanel);
 
         frame.add(menuPanel);
+        frame.revalidate();
         frame.pack();
+        
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setFocusTraversalPolicy(null);
         frame.setResizable(false);
         frame.setVisible(true);
-    }
-
-    public static void showOptions() {
-        // TODO: show options
     }
 
     public static void showGame(String trackFilePath) {
@@ -104,11 +118,47 @@ public class Main {
         frame.setVisible(true);
     }
 
+    public static void showPlay() {
+        // frame.dispose();
+        // frame = new JFrame(GAME_NAME);
+        // frame.setUndecorated(true);
+        // frame.setIconImage(gameIconImage);
+
+        // frame.removeAll();
+        frame.remove(menuPanel);
+        frame.remove(tutorialPanel);
+
+        frame.add(playPanel);
+        frame.revalidate();
+        frame.pack();
+        
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
+        frame.setResizable(false);
+        frame.setVisible(true);
+    }
+
     public static void showTutorial() {
-        frame.dispose();
-        frame = new JFrame(GAME_NAME);
-        frame.setUndecorated(true);
-        frame.setIconImage(gameIconImage);
+        // frame.dispose();
+        // frame = new JFrame(GAME_NAME);
+        // frame.setUndecorated(true);
+        // frame.setIconImage(gameIconImage);
+
+        // frame.add(tutorialPanel);
+        // frame.pack();
+        frame.remove(playPanel);
+        frame.remove(menuPanel);
+
+        frame.add(tutorialPanel);
+        frame.revalidate();
+        frame.pack();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
+        frame.setResizable(false);
+        frame.setVisible(true);
     }
 
     public static void main(String[] args) {
@@ -117,6 +167,8 @@ public class Main {
         loadPersonalData();
 
         menuPanel = new MainMenuPanel();
+        playPanel = new PlayPanel();
+        tutorialPanel = new TutorialPanel();
 
         frame.setUndecorated(true);
         frame.setIconImage(gameIconImage);

@@ -1,6 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
 
-public class HelpPanel extends JPanel {
+public class TutorialPanel extends JPanel {
     
 }
