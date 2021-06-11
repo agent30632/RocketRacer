@@ -25,10 +25,15 @@ public class Main {
     // Standardized UI elements
     // Fonts
     static Font uiTextBig = new Font(Font.SANS_SERIF, Font.BOLD, 64);
-    static Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
-    static Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
+    static Font uiTextBigItalics = new Font(Font.SANS_SERIF, Font.BOLD|Font.ITALIC, 64);
     static Font uiTextMediumHighlight = new Font(Font.SANS_SERIF, Font.ITALIC|Font.BOLD, 48);
     static Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
+    static Font uiTextSmall = new Font(Font.SANS_SERIF, Font.PLAIN, 40);
+    static Font uiTextSmallItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 40);
+    static Font uiTextSmallBold = new Font(Font.SANS_SERIF, Font.BOLD, 40);
+    static Font uiTextTiny = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
+    static Font uiTextTinyItalics = new Font(Font.SANS_SERIF, Font.ITALIC, 24);
+
     // Button border
     static Border buttonBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 5), BorderFactory.createEmptyBorder(2, 15, 2, 15));
     

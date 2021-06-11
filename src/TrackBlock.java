@@ -36,8 +36,6 @@ public class TrackBlock {
     public static Image resetBlockImage = resetBlock.getImage();
     public static Image boostBlockImage = boostBlock.getImage();
 
-
-
     public TrackBlock(BlockType type, int gridX, int gridY, BlockDirection direction) {
         this.type = type;
         this.gridX = gridX;
@@ -195,6 +193,20 @@ public class TrackBlock {
             throw new IllegalArgumentException();
         }
 
+        // So that right to left isn't broken
+        if (x2 < x1) {
+            int temp = x1;
+            x1 = x2;
+            x2 = temp;
+        }
+
+        // So that down to up isn't broken too
+        if (y2 < y1) {
+            int temp = y1;
+            y1 = y2;
+            y2 = temp;
+        }
+
         for (int i = x1; i <= x2; i++) {
             for (int j = y1; j <= y2; j++) {
                 blockSet.add(new TrackBlock(type, i, j, direction));
@@ -226,7 +238,25 @@ public class TrackBlock {
             case CHECKPOINT:
                 g.setColor(Color.YELLOW);
                 // g.fill(hitbox);
+                double cpRotation = 0;
+                switch (this.direction) {
+                    case UP:
+                        break;
+                    case RIGHT:
+                        cpRotation = Math.PI / 2;
+                        break;
+                    case DOWN:
+                        cpRotation = Math.PI;
+                        break;
+                    case LEFT:
+                        cpRotation = -Math.PI / 2;
+                        break;
+                }
+
+                g.rotate(cpRotation, hitbox.getCenterX(), hitbox.getCenterY());
+                
                 g.drawImage(checkpointBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
+                g.rotate(-cpRotation, hitbox.getCenterX(), hitbox.getCenterY());
                 break;
 
             case FINISH:
@@ -238,25 +268,25 @@ public class TrackBlock {
             case BOOST:
                 g.setColor(Color.ORANGE);
                 // g.fill(hitbox);
-                double rotation = 0;
+                double boostRotation = 0;
                 switch (this.direction) {
                     case UP:
                         break;
                     case RIGHT:
-                        rotation = Math.PI / 2;
+                        boostRotation = Math.PI / 2;
                         break;
                     case DOWN:
-                        rotation = Math.PI;
+                        boostRotation = Math.PI;
                         break;
                     case LEFT:
-                        rotation = -Math.PI / 2;
+                        boostRotation = -Math.PI / 2;
                         break;
                 }
 
-                g.rotate(rotation, hitbox.getCenterX(), hitbox.getCenterY());
+                g.rotate(boostRotation, hitbox.getCenterX(), hitbox.getCenterY());
                 
                 g.drawImage(boostBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
-                g.rotate(-rotation, hitbox.getCenterX(), hitbox.getCenterY());
+                g.rotate(-boostRotation, hitbox.getCenterX(), hitbox.getCenterY());
                 break;
 
             case NOCONTROL:

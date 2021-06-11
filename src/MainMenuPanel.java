@@ -48,6 +48,14 @@ public class MainMenuPanel extends JPanel {
         tutorialButton.setBackground(Color.BLACK);
         tutorialButton.setBorder(Main.buttonBorder);
         tutorialButton.setFocusable(false);
+        tutorialButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                // Main.showGame("tracks/testTrack.track");
+                Main.showTutorial();
+            }
+        });
 
         aboutButton = new JButton("About");
         aboutButton.setFont(Main.uiTextBig);

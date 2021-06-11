@@ -8,6 +8,7 @@ public class Player {
     static final double BOOST_ACCELERATION = 0.5; // ADDED onto acceleration value
     static final double ROTATION_RATE = 5;
     static final double MIN_SPEED = 0.25;
+    static final double MAX_SPEED = 60;
 
     static final double BRAKING = 0.95; // velocities are multiplied by this rate every frame (i.e. 0.8 = 20% velocity loss)
     static final double COLLISION_DAMPING = 0.25; // when collision occurs, the reflection velocity is multiplied by this value
@@ -122,6 +123,13 @@ public class Player {
                     velX = 0;
                 }        
             }
+        }
+
+        if (velX > MAX_SPEED) {
+            velX = MAX_SPEED;
+        }
+        if (velY > MAX_SPEED) {
+            velY = MAX_SPEED;
         }
 
         posX += velX;
@@ -298,6 +306,7 @@ public class Player {
         this.isNoControl = false;
 
         this.isFinished = false;
+        this.lastCheckpoint = null;
 
         double x = this.startBlock.hitbox.getCenterX();
         double y = this.startBlock.hitbox.getCenterY();

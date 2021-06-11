@@ -41,7 +41,7 @@ public class AboutPanel extends JPanel {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         contentPanel.setFocusable(false);
         contentPanel.setAlignmentX(0f);
-        contentPanel.setPreferredSize(new Dimension(1720, 980 -backButton.getHeight()));
+        contentPanel.setPreferredSize(new Dimension(1720, 980 - backButton.getHeight()));
 
         // Content for the content panel
         // This is a terrible solution but also a solution that works so ¯\_(ツ)_/¯

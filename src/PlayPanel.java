@@ -76,13 +76,13 @@ public class PlayPanel extends JPanel {
         Time authorTime = new Time(metadataMap.get("authorTime"));
 
         if (!(personalBest == null)) {
-            if (personalBest.compareTo(authorTime) < 0) {
+            if (personalBest.compareTo(authorTime) <= 0) {
                 medalImage = authorMedalImageScaled;
-            } else if (personalBest.compareTo(goldTime) < 0) {
+            } else if (personalBest.compareTo(goldTime) <= 0) {
                 medalImage = goldMedalImageScaled;
-            } else if (personalBest.compareTo(silverTime) < 0) {
+            } else if (personalBest.compareTo(silverTime) <= 0) {
                 medalImage = silverMedalImageScaled;
-            } else if (personalBest.compareTo(bronzeTime) < 0) {
+            } else if (personalBest.compareTo(bronzeTime) <= 0) {
                 medalImage = bronzeMedalImageScaled;
             } else {
                 medalImage = noMedalImageScaled;

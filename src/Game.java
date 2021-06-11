@@ -348,7 +348,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
             // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
             // g2D.drawString("Grid: x = " + player1.gridX + " y = " + player1.gridY, 50, 50);
-            // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
+            g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
 
             // UI elements
             if (startingState) {
@@ -414,16 +414,16 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 // This entire block of text feels scuffed
                 String nextMedal = null;
                 Image medalImage = null;
-                if (personalBest.compareTo(track.getAuthorTime()) < 0) {
+                if (personalBest.compareTo(track.getAuthorTime()) <= 0) {
                     nextMedal = "author medal";
                     medalImage = authorMedalImage;
-                } else if (personalBest.compareTo(track.getGoldTime()) < 0) {
+                } else if (personalBest.compareTo(track.getGoldTime()) <= 0) {
                     nextMedal = "gold medal";
                     medalImage = goldMedalImage;
-                } else if (personalBest.compareTo(track.getSilverTime()) < 0) {
+                } else if (personalBest.compareTo(track.getSilverTime()) <= 0) {
                     nextMedal = track.getGoldTime().toString();
                     medalImage = silverMedalImage;
-                } else if (personalBest.compareTo(track.getBronzeTime()) < 0) {
+                } else if (personalBest.compareTo(track.getBronzeTime()) <= 0) {
                     nextMedal = track.getSilverTime().toString();
                     medalImage = bronzeMedalImage;
                 } else {
@@ -564,7 +564,12 @@ public class Game extends JPanel implements Runnable, KeyListener {
             player1.respawnToStart();
             reset();
         } else if (key == KeyEvent.VK_ENTER && !player1.isFinished) {
-            player1.resetToCP();
+            if (player1.lastCheckpoint == null) {
+                player1.respawnToStart();
+                reset();
+            } else {
+                player1.resetToCP();
+            }
         }
     }
 
