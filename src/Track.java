@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,6 +87,45 @@ public class Track implements Comparable<Track> {
     public int compareTo(Track track2) {
         // TODO Auto-generated method stub
         return this.trackID.compareTo(track2.getTrackID());
+    }
+
+    /**
+     * Parses a track file and only returns the metadata contained within, in the form of a HashMap with specific key-value pairs
+     * The following strings are the only valid keys: trackID, bronzeTime, silverTime, goldTime, authorTime
+     * @return a HashMap containing track metadata (trackID, times)
+     */
+    public static HashMap<String, String> getMetaData(String trackFilepath) {
+        HashMap<String, String> metadataMap = new HashMap<>();
+
+        String trackID = null;
+        String bronzeTime = null;
+        String silverTime = null;
+        String goldTime = null;
+        String authorTime = null;
+
+        try {
+            BufferedReader bufIn = new BufferedReader(new FileReader(trackFilepath));
+
+            trackID = bufIn.readLine();
+            bronzeTime = bufIn.readLine();
+            silverTime = bufIn.readLine();
+            goldTime = bufIn.readLine();
+            authorTime = bufIn.readLine();
+
+            bufIn.close();
+        } catch (FileNotFoundException e) {
+            //TODO: handle exception
+        } catch (IOException e) {
+            //TODO: handle exception
+        }
+
+        metadataMap.put("trackID", trackID);
+        metadataMap.put("bronzeTime", bronzeTime);
+        metadataMap.put("silverTime", silverTime);
+        metadataMap.put("goldTime", goldTime);
+        metadataMap.put("authorTime", authorTime);
+    
+        return metadataMap;
     }
 
     public String getTrackID() {

@@ -17,6 +17,7 @@ public class Main {
     static PlayPanel playPanel;
     static Game gamePanel;
     static TutorialPanel tutorialPanel;
+    static AboutPanel aboutPanel;
 
     // Main frame
     static JFrame frame;
@@ -30,8 +31,10 @@ public class Main {
     static Font uiTextMedium = new Font(Font.SANS_SERIF, Font.BOLD, 48);
     // Button border
     static Border buttonBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 5), BorderFactory.createEmptyBorder(2, 15, 2, 15));
-    static Border levelButtonBorder = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20), buttonBorder);
     
+    /**
+     * Loads the user's personal best times from the data.save file in the save folder, storing it into a HashMap called "personalBests"
+     */
     public static void loadPersonalData() {
         try {
             BufferedReader bufIn = new BufferedReader(new FileReader("save/data.save"));
@@ -60,10 +63,18 @@ public class Main {
         }
     }
 
+    /**
+     * Adds a personal best time to the personal bests HashMap
+     * @param trackID The ID of the track to add a personal best for
+     * @param time the time achieved
+     */
     public static void addPersonalData(String trackID, Time time) {
         personalBests.put(trackID, time);
     }
 
+    /**
+     * Saves the personalBests HashMap to data.save
+     */
     public static void saveDataToFile() {
         try {
             PrintWriter saveWrite = new PrintWriter("save/data.save");
@@ -77,17 +88,22 @@ public class Main {
         }
     }
 
+    /**
+     * Gets the specified personal best time for the given track
+     * @param trackID ID of the track
+     * @return Time object representing the player's personal best on this track
+     */
     public static Time getPersonalBest(String trackID) {
         return personalBests.get(trackID);
     }
 
+    /**
+     * Shows the main menu
+     */
     public static void showMainMenu() {
-        // frame.dispose();
-        // frame = new JFrame(GAME_NAME);
-        // frame.setUndecorated(true);
-        // frame.setIconImage(gameIconImage);
         frame.remove(playPanel);
         frame.remove(tutorialPanel);
+        frame.remove(aboutPanel);
 
         frame.add(menuPanel);
         frame.revalidate();
@@ -100,14 +116,18 @@ public class Main {
         frame.setVisible(true);
     }
 
-    public static void showGame(String trackFilePath) {
+    /**
+     * Shows a new instance of the game using the given track file
+     * @param trackFilepath path of the track file
+     */
+    public static void showGame(String trackFilepath) {
         // TODO: new game time bois
         frame.dispose();
         frame = new JFrame(GAME_NAME);
         frame.setUndecorated(true);
         frame.setIconImage(gameIconImage);
 
-        gamePanel = new Game(trackFilePath);
+        gamePanel = new Game(trackFilepath);
         frame.add(gamePanel);
         frame.addKeyListener(gamePanel);
         frame.pack();
@@ -118,15 +138,17 @@ public class Main {
         frame.setVisible(true);
     }
 
+    /**
+     * Shows the "play" menu (i.e. the level selection screen)
+     */
     public static void showPlay() {
-        // frame.dispose();
-        // frame = new JFrame(GAME_NAME);
-        // frame.setUndecorated(true);
-        // frame.setIconImage(gameIconImage);
-
-        // frame.removeAll();
         frame.remove(menuPanel);
         frame.remove(tutorialPanel);
+        frame.remove(aboutPanel);
+
+        // I had to reconstruct it cause there was a bug where medals wouldn't update after finishing a level
+        // This is a quick and dirty fix for that
+        playPanel = new PlayPanel();
 
         frame.add(playPanel);
         frame.revalidate();
@@ -139,16 +161,13 @@ public class Main {
         frame.setVisible(true);
     }
 
+    /**
+     * Shows the tutorial menu
+     */
     public static void showTutorial() {
-        // frame.dispose();
-        // frame = new JFrame(GAME_NAME);
-        // frame.setUndecorated(true);
-        // frame.setIconImage(gameIconImage);
-
-        // frame.add(tutorialPanel);
-        // frame.pack();
         frame.remove(playPanel);
         frame.remove(menuPanel);
+        frame.remove(aboutPanel);
 
         frame.add(tutorialPanel);
         frame.revalidate();
@@ -161,7 +180,29 @@ public class Main {
         frame.setVisible(true);
     }
 
-    public static void exitGame() {
+    /**
+     * Shows the "about" menu
+     */
+    public static void showAbout() {
+        frame.remove(playPanel);
+        frame.remove(menuPanel);
+        frame.remove(tutorialPanel);
+
+        frame.add(aboutPanel);
+        frame.revalidate();
+        frame.pack();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setFocusTraversalPolicy(null);
+        frame.setResizable(false);
+        frame.setVisible(true);
+    }
+
+    /**
+     * Returns the player to the level selection screen when they have decided to exit the level
+     */
+    public static void exitFromGame() {
         frame.dispose();
         frame = new JFrame(GAME_NAME);
         frame.setUndecorated(true);
@@ -169,7 +210,7 @@ public class Main {
 
         showPlay();
     }
-
+    
     public static void main(String[] args) {
         frame = new JFrame(GAME_NAME);
 
@@ -178,6 +219,7 @@ public class Main {
         menuPanel = new MainMenuPanel();
         playPanel = new PlayPanel();
         tutorialPanel = new TutorialPanel();
+        aboutPanel = new AboutPanel();
 
         frame.setUndecorated(true);
         frame.setIconImage(gameIconImage);

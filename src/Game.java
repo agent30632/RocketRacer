@@ -132,7 +132,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 // TODO: EXIT THE GAME AND RETURN TO REALITY
                 stopMusic();
                 Main.saveDataToFile();
-                Main.exitGame();
+                Main.exitFromGame();
             }
         });
 
@@ -418,7 +418,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                     nextMedal = "author medal";
                     medalImage = authorMedalImage;
                 } else if (personalBest.compareTo(track.getGoldTime()) < 0) {
-                    nextMedal = track.getAuthorTime().toString();
+                    nextMedal = "gold medal";
                     medalImage = goldMedalImage;
                 } else if (personalBest.compareTo(track.getSilverTime()) < 0) {
                     nextMedal = track.getGoldTime().toString();
@@ -436,6 +436,12 @@ public class Game extends JPanel implements Runnable, KeyListener {
                     g2D.setFont(Main.uiTextMediumHighlight);
                     g2D.drawString("Congratulations!", (int) (screenDimensions.getWidth() / 2 - 30), 515);
                     g2D.drawString("You've beat the", (int) (screenDimensions.getWidth() / 2 - 30), 610);
+                    g2D.drawString("author medal!", (int) (screenDimensions.getWidth() / 2 - 30), 665);
+                } else if (nextMedal.compareTo("gold medal") == 0 && medalImage == goldMedalImage) {
+                    g2D.drawImage(goldMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
+                    g2D.setFont(Main.uiTextMediumHighlight);
+                    g2D.drawString("Congratulations!", (int) (screenDimensions.getWidth() / 2 - 30), 515);
+                    g2D.drawString("Now go for the", (int) (screenDimensions.getWidth() / 2 - 30), 610);
                     g2D.drawString("author medal!", (int) (screenDimensions.getWidth() / 2 - 30), 665);
                 } else {
                     g2D.drawImage(medalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);

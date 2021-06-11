@@ -6,8 +6,8 @@ import java.util.*;
 import javax.swing.*;
 
 public class PlayPanel extends JPanel {
-    // Map of all tracks by trackID
-    public static TreeMap<String, String> trackNameFilepathMap = new TreeMap<>();
+    // Map of all tracks by trackID, alphabetically
+    public static TreeMap<String, String> trackIDToFilepathMap = new TreeMap<>();
 
     public static ImageIcon bronzeMedal = new ImageIcon("assets/img/medal_bronze.png");
     public static ImageIcon bronzeMedalImageScaled = new ImageIcon(bronzeMedal.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
@@ -23,6 +23,7 @@ public class PlayPanel extends JPanel {
     // Necessary JComponents
     JPanel selectionPanel;
     JButton backButton;
+    JScrollPane selectionScroll;
 
     public static void loadAllTracks() {
         File trackFolder = new File("tracks");
@@ -35,24 +36,89 @@ public class PlayPanel extends JPanel {
                 fileExt = file.getName().substring(dot + 1);
             }
 
+            // Only files with extension ".track" are parsed
             if (fileExt.compareToIgnoreCase("track") == 0) {
                 try {
                     Track track = new Track(file.getAbsolutePath());
-                    trackNameFilepathMap.put(track.getTrackID(), file.getAbsolutePath());
+                    if (!(trackIDToFilepathMap.containsKey(track.getTrackID()))) {
+                        // Basically if the track exists already it won't be added
+                        // This goes based on the track ID
+                        trackIDToFilepathMap.put(track.getTrackID(), file.getAbsolutePath());
+                    }
                 } catch (IOException e) {
                     //TODO: handle exception
                     // do nothing I guess
+                } catch (IllegalArgumentException e) {
+                    // do nothing here too I guess
                 }
             }
         }
     }
 
+    /**
+     * Creates a button that allows the player to play the selected level
+     * @param trackID
+     * @return
+     */
+    public static JButton createLevelButton(String trackID) {
+        String trackFilepath = trackIDToFilepathMap.get(trackID);
+        if (trackFilepath == null) {
+            return null;
+        }
+
+        ImageIcon medalImage = noMedalImageScaled;
+
+        HashMap<String, String> metadataMap = Track.getMetaData(trackFilepath);
+        Time personalBest = Main.personalBests.get(trackID);
+        Time bronzeTime = new Time(metadataMap.get("bronzeTime"));
+        Time silverTime = new Time(metadataMap.get("silverTime"));
+        Time goldTime = new Time(metadataMap.get("goldTime"));
+        Time authorTime = new Time(metadataMap.get("authorTime"));
+
+        if (!(personalBest == null)) {
+            if (personalBest.compareTo(authorTime) < 0) {
+                medalImage = authorMedalImageScaled;
+            } else if (personalBest.compareTo(goldTime) < 0) {
+                medalImage = goldMedalImageScaled;
+            } else if (personalBest.compareTo(silverTime) < 0) {
+                medalImage = silverMedalImageScaled;
+            } else if (personalBest.compareTo(bronzeTime) < 0) {
+                medalImage = bronzeMedalImageScaled;
+            } else {
+                medalImage = noMedalImageScaled;
+            }
+        }
+
+        JButton newButton = new JButton(trackID);
+        newButton.setIcon(medalImage);
+        newButton.setForeground(Color.WHITE);
+        newButton.setBackground(null);
+        newButton.setBorder(Main.buttonBorder);
+        newButton.setFont(Main.uiTextMedium);
+        newButton.setFocusable(false);
+        newButton.setAlignmentY(0f);
+        newButton.setAlignmentX(0f);
+        newButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                Main.showGame(trackFilepath);
+            }
+        });
+
+        return newButton;
+    }
+
     public PlayPanel() {
         super(true);
 
+        loadAllTracks();
+
         setBorder(BorderFactory.createEmptyBorder(50, 100, 50, 100));
         setPreferredSize(new Dimension(1920, 1080));
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        setAlignmentX(0f);
+        setAlignmentY(0f);
         setBackground(new Color(50, 50, 50));
 
         // Initializing the button
@@ -62,6 +128,7 @@ public class PlayPanel extends JPanel {
         backButton.setBackground(Color.BLACK);
         backButton.setBorder(Main.buttonBorder);
         backButton.setFocusable(false);
+        backButton.setAlignmentX(0f);
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -71,44 +138,25 @@ public class PlayPanel extends JPanel {
         });
 
         // Level selection list
+        GridLayout selectionPanelGrid = new GridLayout(7, 5);
+        selectionPanelGrid.setHgap(10);
+        selectionPanelGrid.setVgap(10);
         selectionPanel = new JPanel();
-        selectionPanel.setLayout(new BoxLayout(selectionPanel, BoxLayout.PAGE_AXIS));
+        selectionPanel.setLayout(selectionPanelGrid);
         selectionPanel.setBackground(null);
+        selectionPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
+        selectionPanel.setFocusable(false);
+        selectionPanel.setAlignmentX(0f);
+
+        selectionScroll = new JScrollPane();
 
         // Box testBox = Box.createHorizontalBox();
-        JButton testLabel = new JButton("Test 1");
-        testLabel.setIcon(authorMedalImageScaled);
-        testLabel.setForeground(Color.WHITE);
-        testLabel.setBackground(null);
-        testLabel.setBorder(Main.levelButtonBorder);
-        testLabel.setFont(Main.uiTextMedium);
-        testLabel.setFocusable(false);
-        testLabel.setAlignmentY(0f);
-        testLabel.setAlignmentX(0f);
-        testLabel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-                Main.showGame("tracks/testTrack.track");
-            }
-        });
-
-        selectionPanel.add(testLabel);
-
-        JButton testLabel2 = new JButton("Test 2");
-        testLabel2.setIcon(noMedalImageScaled);
-        testLabel2.setForeground(Color.WHITE);
-        testLabel2.setBackground(null);
-        testLabel2.setBorder(Main.levelButtonBorder);
-        testLabel2.setFont(Main.uiTextMedium);
-        testLabel2.setFocusable(false);
-        testLabel2.setAlignmentY(0f);
-        testLabel2.setAlignmentX(0f);
-
-        selectionPanel.add(testLabel2);
+        for (String trackID : trackIDToFilepathMap.keySet()) {
+            selectionPanel.add(createLevelButton(trackID));
+        }
         
         // Adding the UI components
+        add(selectionPanel, BorderLayout.LINE_START);
         add(backButton, BorderLayout.PAGE_END);
-        add(selectionPanel, BorderLayout.CENTER);
     }
 }

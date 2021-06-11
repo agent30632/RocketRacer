@@ -10,7 +10,7 @@ public class MainMenuPanel extends JPanel {
 
     static JButton playButton;
     static JButton tutorialButton;
-    static JButton optionsButton;
+    static JButton aboutButton;
     static JButton exitButton;
 
     public MainMenuPanel() {
@@ -49,6 +49,21 @@ public class MainMenuPanel extends JPanel {
         tutorialButton.setBorder(Main.buttonBorder);
         tutorialButton.setFocusable(false);
 
+        aboutButton = new JButton("About");
+        aboutButton.setFont(Main.uiTextBig);
+        aboutButton.setForeground(Color.WHITE);
+        aboutButton.setBackground(Color.BLACK);
+        aboutButton.setBorder(Main.buttonBorder);
+        aboutButton.setFocusable(false);
+        aboutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                // Main.showGame("tracks/testTrack.track");
+                Main.showAbout();
+            }
+        });
+
         exitButton = new JButton("Exit");
         exitButton.setFont(Main.uiTextBig);
         exitButton.setForeground(Color.WHITE);
@@ -65,16 +80,14 @@ public class MainMenuPanel extends JPanel {
 
         leftSidePanel.add(logoLabel);
         leftSidePanel.add(Box.createRigidArea(new Dimension(0, 100)));
-        // leftSidePanel.add(Box.createVerticalGlue());
         leftSidePanel.add(playButton);
-        leftSidePanel.add(Box.createRigidArea(new Dimension(0, 30)));
+        leftSidePanel.add(Box.createRigidArea(new Dimension(0, 25)));
         leftSidePanel.add(tutorialButton);
-        leftSidePanel.add(Box.createRigidArea(new Dimension(0, 30)));
+        leftSidePanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        leftSidePanel.add(aboutButton);
+        leftSidePanel.add(Box.createRigidArea(new Dimension(0, 25)));
         leftSidePanel.add(exitButton);
 
         add(leftSidePanel, BorderLayout.LINE_START);
-
-        // TODO: buttons
-        
     }
 }
