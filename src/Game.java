@@ -16,7 +16,7 @@ import javax.swing.*;
 public class Game extends JPanel implements Runnable, KeyListener {
     // Static final variables (i.e. things that should never change)
     // buttery smooth pls
-    static final int FPS = 60;
+    static final int FPS = 120;
 
     // moosic
     static File musicDir = new File("music/wav/");
@@ -348,7 +348,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             // g2D.drawString("Player direction = " + player1.direction, 1000, 50);
             // g2D.drawString("Checkpoints = " + player1.checkpointCount, 1400, 50);
             // g2D.drawString("Grid: x = " + player1.gridX + " y = " + player1.gridY, 50, 50);
-            g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
+            // g2D.drawString("Speed: x = " + player1.velX + " y = " + player1.velY, 50, 75);
 
             // UI elements
             if (startingState) {
@@ -364,15 +364,35 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 }
 
                 // Rectangle below time & cp count
-                Color prevColor = g2D.getColor();
+                Color prevColor1 = g2D.getColor();
                 g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
                 g2D.fillRoundRect(
                     ((int) screenDimensions.getWidth() - 288) / 2, 
                     ((int) screenDimensions.getHeight() - 112), 
                     288, 162, 50, 50
                 );
-                g2D.setColor(prevColor);
+                g2D.setColor(prevColor1);
 
+                Color prevColor2 = g2D.getColor();
+                g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
+                g2D.fillRoundRect(
+                    (int) screenDimensions.getWidth() - 98, 
+                    (int) screenDimensions.getHeight() - 92, 
+                    128, 132, 50, 50
+                );
+                g2D.setColor(prevColor2);
+
+                long totalSpeed = Math.round(Math.sqrt(player1.velX * player1.velX + player1.velY * player1.velY));
+                int totalSpeedInt = Math.toIntExact(totalSpeed);
+
+                Color prevColor3 = g2D.getColor();
+                g2D.setColor(Color.WHITE);
+                Font prevFont1 = g2D.getFont();
+                g2D.setFont(Main.uiTextMediumHighlight);
+                g2D.drawString("" + totalSpeedInt, (int) screenDimensions.getWidth() - 75, (int) screenDimensions.getHeight() - 25);
+
+                g2D.setFont(prevFont1);
+                g2D.setColor(prevColor3);
                     
                 if (timeObj != null) {
                     drawCenteredText(
@@ -481,8 +501,10 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     public void playMusic() {
         try {
+            // I initially tried the Random class, but it was almost too random
+            // For whatever reason I consistently got repeats with the Random class
+            // This somehow feels better even if it isn't as random as Random
             int randInt = (int) (Math.random() * musicList.length);
-            System.out.println(randInt);
             File file = musicList[randInt];
             music = AudioSystem.getClip();
 

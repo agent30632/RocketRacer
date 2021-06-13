@@ -4,11 +4,11 @@ import javax.swing.*;
 public class Player {
 
     // Static final variables (i.e. things that should never change during the game)
-    static final double ACCELERATION = 0.5;
-    static final double BOOST_ACCELERATION = 0.5; // ADDED onto acceleration value
-    static final double ROTATION_RATE = 5;
-    static final double MIN_SPEED = 0.25;
-    static final double MAX_SPEED = 60;
+    static final double ACCELERATION = 0.15;
+    static final double BOOST_ACCELERATION = 0.15; // ADDED onto acceleration value
+    static final double ROTATION_RATE = 3;
+    static final double MIN_SPEED = 0.05;
+    static final double MAX_SPEED = 30;
 
     static final double BRAKING = 0.95; // velocities are multiplied by this rate every frame (i.e. 0.8 = 20% velocity loss)
     static final double COLLISION_DAMPING = 0.25; // when collision occurs, the reflection velocity is multiplied by this value
@@ -241,6 +241,7 @@ public class Player {
         
                     case NOCONTROL:
                         this.isNoControl = true;
+                        this.isBoosting = false;
                         break;
                     
                     case RESET:

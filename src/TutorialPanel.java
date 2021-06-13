@@ -115,10 +115,12 @@ public class TutorialPanel extends JPanel {
         // Content for the content panel
         // Controls
         JLabel controlsLabel = createLeftAlignedLabel("Controls", Main.uiTextMedium);
-        JLabel forwardsLabel = createLeftAlignedLabel("W - Forwards", Main.uiTextSmall);
-        JLabel leftLabel = createLeftAlignedLabel("A - Turn Left", Main.uiTextSmall);
-        JLabel rightLabel = createLeftAlignedLabel("D - Turn Right", Main.uiTextSmall);
-        JLabel brakeLabel = createLeftAlignedLabel("LShift - Brake", Main.uiTextSmall);
+        JLabel forwardsLabel = createLeftAlignedLabel("W - Forwards", Main.uiTextTiny);
+        JLabel leftLabel = createLeftAlignedLabel("A - Turn Left", Main.uiTextTiny);
+        JLabel rightLabel = createLeftAlignedLabel("D - Turn Right", Main.uiTextTiny);
+        JLabel brakeLabel = createLeftAlignedLabel("LShift - Brake", Main.uiTextTiny);
+        JLabel resetLabel = createLeftAlignedLabel("Backspace - Reset to Start", Main.uiTextTiny);
+        JLabel respawnLabel = createLeftAlignedLabel("Enter - Respawn at Last Checkpoint", Main.uiTextTiny);
 
         // How to play
         JLabel howToPlayLabel = createLeftAlignedLabel("How to Play", Main.uiTextMedium);
@@ -144,6 +146,8 @@ public class TutorialPanel extends JPanel {
         contentPanel.add(leftLabel);
         contentPanel.add(rightLabel);
         contentPanel.add(brakeLabel);
+        contentPanel.add(resetLabel);
+        contentPanel.add(respawnLabel);
 
         // Adding gameplay tutorial labels
         contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));

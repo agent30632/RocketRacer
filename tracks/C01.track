@@ -1,0 +1,35 @@
+C01
+00:02.727
+00:02.350
+00:02.013
+00:01.851
+(0, 0) START RIGHT
+(13, 13) FINISH RIGHT
+(3, 2) BOOST DOWN
+(2, 3) BOOST RIGHT
+(12, 14) (15, 15) WALL UP
+(14, 12) (15, 13) WALL UP
+(2, 0) (3, 0) WALL UP
+(3, 1) (4, 1) WALL UP
+(4, 2) (5, 2) WALL UP
+(5, 3) (6, 3) WALL UP
+(6, 4) (7, 4) WALL UP
+(7, 5) (8, 5) WALL UP
+(8, 6) (9, 6) WALL UP
+(9, 7) (10, 7) WALL UP
+(10, 8) (11, 8) WALL UP
+(11, 9) (12, 9) WALL UP
+(12, 10) (13, 10) WALL UP
+(13, 11) (14, 11) WALL UP
+(0, 2) (0, 3) WALL UP
+(1, 3) (1, 4) WALL UP
+(2, 4) (2, 5) WALL UP
+(3, 5) (3, 6) WALL UP
+(4, 6) (4, 7) WALL UP
+(5, 7) (5, 8) WALL UP
+(6, 8) (6, 9) WALL UP
+(7, 9) (7, 10) WALL UP
+(8, 10) (8, 11) WALL UP
+(9, 11) (9, 12) WALL UP
+(10, 12) (10, 13) WALL UP
+(11, 13) (11, 14) WALL UP

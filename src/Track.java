@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -32,6 +29,13 @@ public class Track implements Comparable<Track> {
      * @throws ParseException if the reader encounters an error when parsing the file (e.g. invalid formatting)
      */
     public Track(String filepath) throws FileNotFoundException, IOException, IllegalArgumentException {
+        File fileTest = new File(filepath);
+        if (fileTest.length() < 7) {
+            // If there are less than seven lines, then the track is not finishable
+            // Since the track's finish is defined on the seventh line
+            throw new FileNotFoundException();
+        }
+        
         BufferedReader bufIn = new BufferedReader(new FileReader(filepath));
 
         this.trackID = bufIn.readLine();
