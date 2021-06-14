@@ -138,7 +138,7 @@ public class PlayPanel extends JPanel {
         });
 
         // Level selection list
-        GridLayout selectionPanelGrid = new GridLayout(6, 5);
+        GridLayout selectionPanelGrid = new GridLayout(0, 5);
         selectionPanelGrid.setHgap(10);
         selectionPanelGrid.setVgap(10);
         selectionPanel = new JPanel();

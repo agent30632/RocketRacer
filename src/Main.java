@@ -38,11 +38,11 @@ public class Main {
     static Border buttonBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 5), BorderFactory.createEmptyBorder(2, 15, 2, 15));
     
     /**
-     * Loads the user's personal best times from the data.save file in the save folder, storing it into a HashMap called "personalBests"
+     * Loads the user's personal best times from the pb.save file in the save folder, storing it into a HashMap called "personalBests"
      */
     public static void loadPersonalData() {
         try {
-            BufferedReader bufIn = new BufferedReader(new FileReader("save/data.save"));
+            BufferedReader bufIn = new BufferedReader(new FileReader("save/pb.save"));
             String line = bufIn.readLine();
             
             while (line != null) {
@@ -57,7 +57,7 @@ public class Main {
 
             bufIn.close();
         } catch (FileNotFoundException e) {
-            File newSave = new File("save/data.save");
+            File newSave = new File("save/pb.save");
             try {
                 newSave.createNewFile();
             } catch (IOException e1) {
@@ -78,11 +78,11 @@ public class Main {
     }
 
     /**
-     * Saves the personalBests HashMap to data.save
+     * Saves the personalBests HashMap to pb.save
      */
     public static void saveDataToFile() {
         try {
-            PrintWriter saveWrite = new PrintWriter("save/data.save");
+            PrintWriter saveWrite = new PrintWriter("save/pb.save");
             for (String key : personalBests.keySet()) {
                 saveWrite.println(key + " " + personalBests.get(key));
             }
@@ -215,8 +215,41 @@ public class Main {
 
         showPlay();
     }
+
+    public static boolean getOpenGLSetting() {
+        try {
+            Scanner in = new Scanner(new FileReader("save/settings.save"));
+            String line = in.nextLine();
+            StringTokenizer lineST = new StringTokenizer(line, " \t\n\r\f=");
+            String key = lineST.nextToken();
+            String value = lineST.nextToken();
+
+            if (key.compareTo("opengl") == 0) {
+                if (value.compareTo("true") == 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            return false;
+        }
+    }
     
     public static void main(String[] args) {
+        // I have no idea what Java was doing before
+        // But this made the game much less laggy for me
+        boolean openGL = getOpenGLSetting();
+        System.out.println(openGL);
+        if (openGL) {
+            System.setProperty("sun.java2d.opengl", "true");
+        } else {
+            System.setProperty("sun.java2d.opengl", "false");
+        }
+
         frame = new JFrame(GAME_NAME);
 
         loadPersonalData();
