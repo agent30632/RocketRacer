@@ -140,6 +140,12 @@ public class Player {
         if (velY > MAX_SPEED) {
             velY = MAX_SPEED;
         }
+        if (velX < -MAX_SPEED) {
+            velX = -MAX_SPEED;
+        }
+        if (velY < -MAX_SPEED) {
+            velY = -MAX_SPEED;
+        }
 
         posX += velX;
         posY -= velY;
