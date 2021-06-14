@@ -4,8 +4,6 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class AboutPanel extends JPanel {
-    // Map of all tracks by trackID
-
     // Necessary JComponents
     JPanel contentPanel;
     JButton backButton;
@@ -29,7 +27,7 @@ public class AboutPanel extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
+                // Shows the main menu
                 Main.showMainMenu();
             }
         });

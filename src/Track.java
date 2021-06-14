@@ -26,7 +26,7 @@ public class Track implements Comparable<Track> {
      * @param filepath the path of the track file
      * @throws FileNotFoundException if the provide filepath does not point to a file
      * @throws IOException if an I/O exception of some sort occurs
-     * @throws ParseException if the reader encounters an error when parsing the file (e.g. invalid formatting)
+     * @throws IllegalArgumentException if the reader encounters an error when parsing the file (e.g. invalid formatting)
      */
     public Track(String filepath) throws FileNotFoundException, IOException, IllegalArgumentException {
         File fileTest = new File(filepath);
@@ -56,15 +56,18 @@ public class Track implements Comparable<Track> {
             throw new IllegalArgumentException();
         }
 
+        // Standard format
         Pattern blockFormat = Pattern.compile("^(\\([0-9]+, [0-9]+\\) ){1}(START|CHECKPOINT|FINISH|BOOST|NOCONTROL|RESET|WALL){1} (UP|RIGHT|DOWN|LEFT){1}$");
+        // Range format for only select blocks
         Pattern blockFormatAlt = Pattern.compile("^(\\([0-9]+, [0-9]+\\) ){2}(BOOST|NOCONTROL|RESET|WALL){1} (UP|RIGHT|DOWN|LEFT){1}$");
 
+        // List of all track blocks
         HashSet<TrackBlock> trackBlockBuffer = new HashSet<>();
         String trackData = bufIn.readLine();
         while (trackData != null) {
             Matcher format1Matcher = blockFormat.matcher(trackData);
             Matcher format2Matcher = blockFormatAlt.matcher(trackData);
-
+            // Standard format match
             if (format1Matcher.matches()) {
                 TrackBlock block = TrackBlock.parseBlock(trackData);
                 BlockType blockType = block.getType();
@@ -73,8 +76,14 @@ public class Track implements Comparable<Track> {
                 }
                 trackBlockBuffer.add(block);
             } else if (format2Matcher.matches()) {
-                // TODO: rectangles of blocks
-                trackBlockBuffer.addAll(TrackBlock.parseBlockRange(trackData));
+                // Range format match
+                try {
+                    trackBlockBuffer.addAll(TrackBlock.parseBlockRange(trackData));
+                } catch (IllegalArgumentException e) {
+                    // just ignore the thing if it isn't working
+                    // that way maybe something'll be salvaged from the file
+                }
+                
             } else {
                 bufIn.close();
                 throw new NumberFormatException();
@@ -89,7 +98,6 @@ public class Track implements Comparable<Track> {
 
     @Override
     public int compareTo(Track track2) {
-        // TODO Auto-generated method stub
         return this.trackID.compareTo(track2.getTrackID());
     }
 
@@ -118,9 +126,9 @@ public class Track implements Comparable<Track> {
 
             bufIn.close();
         } catch (FileNotFoundException e) {
-            //TODO: handle exception
+            e.printStackTrace();
         } catch (IOException e) {
-            //TODO: handle exception
+            e.printStackTrace();
         }
 
         metadataMap.put("trackID", trackID);

@@ -25,6 +25,9 @@ public class PlayPanel extends JPanel {
     JButton backButton;
     JScrollPane selectionScroll;
 
+    /**
+     * Loads all track files into memory (trackIDToFilepathMap)
+     */
     public static void loadAllTracks() {
         File trackFolder = new File("tracks");
         File[] trackFolderArray = trackFolder.listFiles();
@@ -45,11 +48,9 @@ public class PlayPanel extends JPanel {
                         // This goes based on the track ID
                         trackIDToFilepathMap.put(track.getTrackID(), file.getAbsolutePath());
                     }
-                } catch (IOException e) {
-                    //TODO: handle exception
-                    // do nothing I guess
-                } catch (IllegalArgumentException e) {
-                    // do nothing here too I guess
+                } catch (IllegalArgumentException | IOException e) { 
+                    // Do nothing, it means it's an invalid track
+                    // Or something went wrong with BufferedReader
                 }
             }
         }
@@ -57,8 +58,8 @@ public class PlayPanel extends JPanel {
 
     /**
      * Creates a button that allows the player to play the selected level
-     * @param trackID
-     * @return
+     * @param trackID ID of the track
+     * @return a JButton containing the track ID and the player's highest achieved level on that track
      */
     public static JButton createLevelButton(String trackID) {
         String trackFilepath = trackIDToFilepathMap.get(trackID);
@@ -101,7 +102,6 @@ public class PlayPanel extends JPanel {
         newButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 Main.showGame(trackFilepath);
             }
         });
@@ -109,9 +109,13 @@ public class PlayPanel extends JPanel {
         return newButton;
     }
 
+    /**
+     * Creates a new instance of PlayPanel
+     */
     public PlayPanel() {
         super(true);
 
+        // Loading all the tracks first
         loadAllTracks();
 
         setBorder(BorderFactory.createEmptyBorder(50, 100, 50, 100));
@@ -121,7 +125,7 @@ public class PlayPanel extends JPanel {
         setAlignmentY(0f);
         setBackground(new Color(50, 50, 50));
 
-        // Initializing the button
+        // Initializing the back button
         backButton = new JButton("< Back");
         backButton.setFont(Main.uiTextBig);
         backButton.setForeground(Color.WHITE);
@@ -132,7 +136,6 @@ public class PlayPanel extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 Main.showMainMenu();
             }
         });
@@ -150,7 +153,7 @@ public class PlayPanel extends JPanel {
 
         selectionScroll = new JScrollPane();
 
-        // Box testBox = Box.createHorizontalBox();
+        // Adding a new button to the grid for every level in the folder
         for (String trackID : trackIDToFilepathMap.keySet()) {
             selectionPanel.add(createLevelButton(trackID));
         }

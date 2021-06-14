@@ -15,7 +15,7 @@ public class Player {
 
     static final int PLAYER_WIDTH = 64;
     static final int PLAYER_HEIGHT = 64;
-    static final int PLAYER_HITBOXTRIM = 8; // adjusts hitbox by trimming this amount from each dimension
+    static final int PLAYER_HITBOXTRIM = 8; // adjusts hitbox compared to the player sprite by trimming this amount from each hitbox dimension
 
     // instance variables
     // velocity
@@ -51,6 +51,7 @@ public class Player {
     public boolean isBoosting;
     public boolean isNoControl;    
 
+    // Images
     ImageIcon playerBody = new ImageIcon("assets/img/player_main.png");
     Image playerBodyScaled;
     ImageIcon playerExhaust = new ImageIcon("assets/img/player_exhaust.png");
@@ -58,6 +59,13 @@ public class Player {
     ImageIcon playerBoost = new ImageIcon("assets/img/player_boost.png");
     Image playerBoostScaled;
     
+    /**
+     * Creates a new player object with the following parameters
+     * @param posX player's x position
+     * @param posY player's y position
+     * @param direction player's direction
+     * @param startBlock the TrackBlock object that the player starts at
+     */
     public Player(double posX, double posY, double direction, TrackBlock startBlock) {
         this.posX = posX;
         this.posY = posY;
@@ -75,13 +83,16 @@ public class Player {
 
         this.isFinished = false;
 
+        // Immmmmmmages
         hitbox = new Rectangle((int) posX, (int) posY, PLAYER_WIDTH, PLAYER_HEIGHT);
         playerBodyScaled = playerBody.getImage().getScaledInstance(PLAYER_WIDTH, PLAYER_HEIGHT, Image.SCALE_DEFAULT);
         playerExhaustScaled = playerExhaust.getImage().getScaledInstance(PLAYER_WIDTH, PLAYER_HEIGHT, Image.SCALE_DEFAULT);
         playerBoostScaled = playerBoost.getImage().getScaledInstance(PLAYER_WIDTH, PLAYER_HEIGHT, Image.SCALE_DEFAULT);
     }
 
-
+    /**
+     * Update function for player objects, used by the game's main update function
+     */
     public void update() {
         // changing the player state only works if you have control
         // duh
@@ -101,14 +112,12 @@ public class Player {
     
             if (isAccelerating) {
                 // Oh geez trigonometry is pain
-                // TODO: reduce the number of trig calculations
                 double cos = Math.cos(direction * Math.PI / 180);
                 double sin = Math.sin(direction * Math.PI / 180);
 
                 velX += ACCELERATION * cos;
                 velY += ACCELERATION * sin;
                 if (isBoosting) {
-                    // TODO: reduce the number of trig calculations
                     velX += BOOST_ACCELERATION * cos;
                     velY += BOOST_ACCELERATION * sin;
                 }
@@ -142,7 +151,6 @@ public class Player {
     }
 
     public void draw(Graphics2D g) {
-        // TODO: camera offset
         g.rotate(-direction * Math.PI / 180, posX, posY);
             
         if (isAccelerating) {
@@ -157,6 +165,10 @@ public class Player {
         g.rotate(direction * Math.PI / 180, posX, posY);
     }
 
+    /**
+     * Checks collisions with other rectangles, comparing them to the player hitbox
+     * @param rect the other rectangle to check collisions with
+     */
     public void checkCollision(Rectangle rect) {
         // NOTE: i yoinked this code from Stanley's game examples (the MovingAndCollisions one)
         // o7 to Stanley and his code
@@ -253,6 +265,9 @@ public class Player {
         }        
     }
 
+    /**
+     * Keeps the player within the bounds of the level
+     */
     public void keepInBounds() {
 		if(this.posX < hitbox.width / 2) {
             this.setPos(hitbox.width / 2, this.posY);
@@ -272,6 +287,11 @@ public class Player {
 			
 	}
 
+    /**
+     * Sets the position of the player
+     * @param x player's new x position
+     * @param y player's new y position
+     */
     public void setPos(double x, double y) {
         this.posX = x;
         this.posY = y;
@@ -279,6 +299,9 @@ public class Player {
         hitbox.setRect(posX - PLAYER_WIDTH / 2 + PLAYER_HITBOXTRIM, posY - PLAYER_HEIGHT / 2 + PLAYER_HITBOXTRIM, PLAYER_WIDTH - PLAYER_HITBOXTRIM * 2, PLAYER_HEIGHT - PLAYER_HITBOXTRIM * 2);
     }
 
+    /**
+     * Returns the player to the last checkpoint they touched. If they did not touch a checkpoint, they will be respawned at the start of the level
+     */
     public void resetToCP() {
         velX = 0;
         velY = 0;
@@ -299,6 +322,9 @@ public class Player {
         }
     }
 
+    /**
+     * Respawns the player at the start of the level
+     */
     public void respawnToStart() {
         velX = 0;
         velY = 0;

@@ -66,12 +66,11 @@ public class TutorialPanel extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 Main.showMainMenu();
             }
         });
 
-        // Creating the outer panel
+        // Creating the outer panel (contains the content)
         outerPanel = new JPanel();
         outerPanel.setLayout(new BorderLayout());
         outerPanel.setBackground(null);
@@ -79,7 +78,7 @@ public class TutorialPanel extends JPanel {
         outerPanel.setFocusable(false);
         outerPanel.setAlignmentX(0f);
 
-        // Creating the images panel
+        // Creating the images panel (contains block images)
         GridLayout imageGrid = new GridLayout(4, 2);
         imagesPanel = new JPanel();
         imagesPanel.setLayout(imageGrid);
@@ -104,7 +103,7 @@ public class TutorialPanel extends JPanel {
         imagesPanel.add(noControlImageBlock);
         imagesPanel.add(resetBlockImageLabel);
 
-        // Creating the content panel
+        // Creating the content panel (contains the text labels)
         contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.PAGE_AXIS));
         contentPanel.setBackground(null);
@@ -113,6 +112,7 @@ public class TutorialPanel extends JPanel {
         contentPanel.setAlignmentX(0f);
 
         // Content for the content panel
+        // Maybe instead of JLabels a better idea would've been a JTextArea or something
         // Controls
         JLabel controlsLabel = createLeftAlignedLabel("Controls", Main.uiTextMedium);
         JLabel forwardsLabel = createLeftAlignedLabel("W - Forwards", Main.uiTextTiny);
@@ -127,7 +127,7 @@ public class TutorialPanel extends JPanel {
         JLabel descriptionLabel1 = createLeftAlignedLabel("Play as many tracks as you can, finish as fast as possible, and gather as many medals as possible!", Main.uiTextTiny);
         JLabel descriptionLabel2 = createLeftAlignedLabel("Each track has four medal times to beat: bronze, silver, gold, and author, each of which provide", Main.uiTextTiny);
         JLabel descriptionLabel3 = createLeftAlignedLabel("a new challenge and endless replayability!", Main.uiTextTiny);
-        JLabel descriptionLabel4 = createLeftAlignedLabel("Beat the author time? Set the fastest times possible and brag to your friends about it!", Main.uiTextTiny);
+        JLabel descriptionLabel4 = createLeftAlignedLabel("Time elapsed and checkpoints are shown in the bottom middle, with speed in the bottom right.", Main.uiTextTiny);
 
         // Block descriptions
         JLabel blockLabel = createLeftAlignedLabel("Track Blocks", Main.uiTextMedium);

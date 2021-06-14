@@ -23,70 +23,62 @@ public class Game extends JPanel implements Runnable, KeyListener {
     static File[] musicList = musicDir.listFiles();
 
     // Game objects
-    Thread gameThread;
-    Camera camera;
+    private Thread gameThread;
+    private Camera camera;
     // I added a 1 to differentiate the class and the object itself
     // "Player player" is cursed and likely punishable by life in prison
-    Player player1;
+    private Player player1;
     
     // Game state variables
-    boolean gameLoaded;
-    boolean timeIsRunning;
-    boolean startingState;
-    boolean haveParsedFinish;
+    private boolean gameLoaded;
+    private boolean timeIsRunning;
+    private boolean startingState;
+    private boolean haveParsedFinish;
 
     // Timing variables
-    long timeStart;
-    long timeElapsed;
+    private long timeStart;
+    private long timeElapsed;
     // boolean countdownTimer;
     // long countdownLastCount;
     // int countdownTimesCounted;
 
     // Misc. elements
-    Dimension screenDimensions;
-    Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
-    Time personalBest;
+    private Dimension screenDimensions;
+    private Rectangle playableArea = new Rectangle(0, 0, Track.MAX_GRID_X  * TrackBlock.BLOCK_WIDTH, Track.MAX_GRID_Y * TrackBlock.BLOCK_HEIGHT);
+    private Time personalBest;
 
     // Audio elements
-    Clip music;
-    Clip startSound;
-    Clip engineSound;
-    boolean engineSoundPlaying;
+    private Clip music;
+    private Clip engineSound;
+    private boolean engineSoundPlaying;
 
     // Track elements
-    Track track;
-    String trackFilePath;
+    private Track track;
+    private String trackFilePath;
 
-    boolean trackLoaded = false;
-    HashSet<TrackBlock> trackBlockData = new HashSet<>();
+    private boolean trackLoaded = false;
+    private HashSet<TrackBlock> trackBlockData = new HashSet<>();
 
     // UI Elements
-    Time timeObj = null;
+    private Time timeObj = null;
     // Medals
-    ImageIcon bronzeMedal = new ImageIcon("assets/img/medal_bronze.png");
-    Image bronzeMedalImage;
-    ImageIcon silverMedal = new ImageIcon("assets/img/medal_silver.png");
-    Image silverMedalImage;
-    ImageIcon goldMedal = new ImageIcon("assets/img/medal_gold.png");
-    Image goldMedalImage;
-    ImageIcon authorMedal = new ImageIcon("assets/img/medal_author.png");
-    Image authorMedalImage;
-    ImageIcon noMedal = new ImageIcon("assets/img/medal_blank.png");
-    Image noMedalImage;
+    private ImageIcon bronzeMedal = new ImageIcon("assets/img/medal_bronze.png");
+    private Image bronzeMedalImage;
+    private ImageIcon silverMedal = new ImageIcon("assets/img/medal_silver.png");
+    private Image silverMedalImage;
+    private ImageIcon goldMedal = new ImageIcon("assets/img/medal_gold.png");
+    private Image goldMedalImage;
+    private ImageIcon authorMedal = new ImageIcon("assets/img/medal_author.png");
+    private Image authorMedalImage;
+    private ImageIcon noMedal = new ImageIcon("assets/img/medal_blank.png");
+    private Image noMedalImage;
 
-    JLabel restartLabel;
-    JLabel exitLabel;
-
-    /**
-     * Creates an empty game panel, with zero functionality. Exists only to avoid NullPointerExceptions.
-     */
-    public Game() {
-
-    }
+    private JLabel restartLabel;
+    private JLabel exitLabel;
 
     /**
      * Loads an instance of Game, using the provided track file
-     * @param trackFile
+     * @param trackFile the filepath for the track file
      */
     public Game(String trackFile) {
         // Setting preferences for the panel
@@ -100,15 +92,25 @@ public class Game extends JPanel implements Runnable, KeyListener {
         try {
             this.track = new Track(trackFilePath);
         } catch (FileNotFoundException e) {
+            // This should never happen because
+            // the list of track files is based on what exists
+            // Will only occur if you delete the file while the game is running I guess
+            // Pls don't do that
             System.out.println("wuh oh");
             System.exit(1);
         } catch (IOException e) {
             System.out.println(" there was an");
             System.exit(1);
         } catch (IllegalArgumentException e) {
+            // Invalid track file
+            // Shouldn't ever happen because invalid track files are never loaded
+            // And thus you should never be able to select them
+            // Will only occur if you invalidate a track file while the game is running I guess
+            // Pls don't do that
             System.out.println(" exception that i didn't figure out");
             System.exit(1);
         }
+        // Loading track data
         trackBlockData = track.getBlockSet();
         trackLoaded = true;
 
@@ -117,6 +119,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         // Creating UI elements
         screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
+        // Exit game label
         exitLabel = new JLabel("Exit", SwingConstants.LEFT);
         exitLabel.setBounds(
             (int) screenDimensions.getWidth() / 2 - 350, 
@@ -129,13 +132,13 @@ public class Game extends JPanel implements Runnable, KeyListener {
         exitLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TODO: EXIT THE GAME AND RETURN TO REALITY
                 stopMusic();
                 Main.saveDataToFile();
                 Main.exitFromGame();
             }
         });
 
+        // Restart game label
         restartLabel = new JLabel("Restart", SwingConstants.RIGHT);
         restartLabel.setBounds(
             (int) screenDimensions.getWidth() / 2, 
@@ -163,13 +166,18 @@ public class Game extends JPanel implements Runnable, KeyListener {
         // Idk probably a good idea to initialize this so I don't get NullPointerExceptions
         engineSoundPlaying = false;
 
+        // Was supposed to help with lag
+        // Did not help with lag
+        // Still have it though I guess, usually not the worst idea
         setDoubleBuffered(true);
 
         gameThread = new Thread(this);
         gameThread.start();
     }
 
-    // As it says on the tin
+    /**
+     * Used by the run() method to initialize the game in its default state
+     */
     public void initialize() {
         if (trackLoaded) {
             // player initialization
@@ -177,6 +185,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             double startX = startRectangle.getCenterX();
             double startY = startRectangle.getCenterY();
             double rotation = 0;
+            // Pointing the player the right way
             switch(track.getStartBlock().getDirection()) {
                 case UP:
                     rotation = 90;
@@ -191,22 +200,24 @@ public class Game extends JPanel implements Runnable, KeyListener {
                     rotation = 0;
                     break;
             }
-            
+            // Initializing the player object
             player1 = new Player(startX, startY, rotation, track.getStartBlock());
         }
-        // Camera obj
+        // Camera obj initialization
         camera = new Camera(300, 300);
 
         // Notifies paintComponent that painting is a good idea
-        // This was necessary to not have 10231976 NullPointerExceptions at the start
+        // Was necessary to not have 10231976 NullPointerExceptions at the start
         gameLoaded = true;
 
         // Timer stuff
         timeStart = System.currentTimeMillis();
         timeIsRunning = true;
 
+        // disco time
         playMusic();
 
+        // One final reset just to make sure
         reset();
     }
 
@@ -215,7 +226,6 @@ public class Game extends JPanel implements Runnable, KeyListener {
         initialize();
 
         while (true) {
-            // TODO: fix the bloody lag
             update();
             this.repaint();
             try {
@@ -226,6 +236,9 @@ public class Game extends JPanel implements Runnable, KeyListener {
         }
     }
 
+    /**
+     * Update function for the game, runs every frame
+     */
     public void update() {
         // Player update functions
         player1.update();
@@ -273,8 +286,10 @@ public class Game extends JPanel implements Runnable, KeyListener {
         }
     }
 
+    /**
+     * Resets the game to its starting state
+     */
     public void reset() {
-        // TODO: allow restarting the game
         timeStart = System.currentTimeMillis();
         timeObj = new Time(0, 0, 0);
 
@@ -294,6 +309,9 @@ public class Game extends JPanel implements Runnable, KeyListener {
         remove(restartLabel);
     }
 
+    /**
+     * Gives the player control of their rocket and starts the timer
+     */
     public void start() {
         timeStart = System.currentTimeMillis();
         timeIsRunning = true;
@@ -303,10 +321,9 @@ public class Game extends JPanel implements Runnable, KeyListener {
  
     @Override
     public void paintComponent(Graphics g) {
-        // TODO: screen space works from top left, remember that when building things
         Graphics2D g2D = (Graphics2D) g;
 
-        // Rendering settings
+        // Rendering settings to make the game look less bad
         RenderingHints antiAliasing = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2D.setRenderingHints(antiAliasing);
         RenderingHints imageInterp = new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -318,7 +335,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
         // Game draw calls
         if (gameLoaded) {
-            g2D.translate(camera.getX(), camera.getY()); // god bless this method        
+            g2D.translate(camera.getX(), camera.getY()); // god bless this method
 
             // Background
             g2D.setColor(Color.LIGHT_GRAY);
@@ -352,6 +369,8 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
             // UI elements
             if (startingState) {
+                // Drawn when the player has yet to actually do anything
+                // In case the player is confused why nothing is happening at the beginning
                 drawCenteredText(g2D, "Press any key to start...", 72, Main.uiTextBig);
             }
             
@@ -373,6 +392,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 );
                 g2D.setColor(prevColor1);
 
+                // Bottom right speed indicator
                 Color prevColor2 = g2D.getColor();
                 g2D.setColor(new Color(0f, 0f, 0f, 0.5f));
                 g2D.fillRoundRect(
@@ -385,6 +405,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 long totalSpeed = Math.round(Math.sqrt(player1.velX * player1.velX + player1.velY * player1.velY));
                 int totalSpeedInt = Math.toIntExact(totalSpeed);
 
+                // Draws the player's speed
                 Color prevColor3 = g2D.getColor();
                 g2D.setColor(Color.WHITE);
                 Font prevFont1 = g2D.getFont();
@@ -393,7 +414,8 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
                 g2D.setFont(prevFont1);
                 g2D.setColor(prevColor3);
-                    
+                
+                // Draws the player's total time so far
                 if (timeObj != null) {
                     drawCenteredText(
                         g2D, 
@@ -402,6 +424,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                         Main.uiTextMediumHighlight
                     );
                 }
+                // Draws the player's total checkpoint count so far
                 drawCenteredText(
                     g2D, 
                     String.format("%d/%d", player1.checkpointCount, track.getCheckpointCount()), 
@@ -451,6 +474,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                     medalImage = noMedalImage;
                 }
 
+                // Drawing the medal that the player got
                 if (nextMedal.compareTo("author medal") == 0 && medalImage == authorMedalImage) {
                     g2D.drawImage(authorMedalImage, (int) (screenDimensions.getWidth() / 2 - 330), 460, null);
                     g2D.setFont(Main.uiTextMediumHighlight);
@@ -477,6 +501,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
                 g2D.setColor(prevColor);
             }
         } else {
+            // If for whatever reason the game has still not loaded, here's a loading screen
             g2D.setColor(Color.WHITE);
             g2D.setFont(Main.uiTextBig);
             g2D.drawString("Loading...", (int) (screenDimensions.getWidth() - 400), (int) screenDimensions.getHeight() - 80);
@@ -499,6 +524,9 @@ public class Game extends JPanel implements Runnable, KeyListener {
         g.setFont(oldFont);
     }
 
+    /**
+     * Picks a random .wav file from music/wav to play for the user while in game
+     */
     public void playMusic() {
         try {
             // I initially tried the Random class, but it was almost too random
@@ -508,23 +536,29 @@ public class Game extends JPanel implements Runnable, KeyListener {
             File file = musicList[randInt];
             music = AudioSystem.getClip();
 
-            // getAudioInputStream() also accepts a File or InputStream
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             music.open(ais);
             FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
             gainControl.setValue(-15);
             music.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
-            //TODO: handle exception
+            // If an exception occurs, the game won't crash (I think)
+            // It'll just not play music
             e.printStackTrace();
         }
     }
 
+    /**
+     * Stops the currently playing music
+     */
     public void stopMusic() {
         music.stop();
         music.close();
     }
 
+    /**
+     * Plays the player's engine sound
+     */
     public void playEngineSound() {
         try {
             // Engine audio courtesy of Stingray Productions on YouTube
@@ -539,11 +573,14 @@ public class Game extends JPanel implements Runnable, KeyListener {
             gainControl.setValue(-10);
             engineSound.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
-            //TODO: handle exception
+            // You better not have deleted the engine audio
             e.printStackTrace();
         }
     }
 
+    /**
+     * Stops the player's engine audio
+     */
     public void stopEngineSound() {
         engineSound.stop();
         engineSound.close();
@@ -551,17 +588,20 @@ public class Game extends JPanel implements Runnable, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        // TODO Auto-generated method stub
+        
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
+        // Idk why I singled out escape as the only key to be ignored
+        // I guess I was planning on having a pause menu or something
+        // Oops
         if (startingState && key != KeyEvent.VK_ESCAPE) {
             start();
         }
-        // Player controls
+        // Player controls (assuming they have control)
         if (!player1.isNoControl) {
             if (key == KeyEvent.VK_W) {
                 player1.isAccelerating = true;
@@ -582,6 +622,7 @@ public class Game extends JPanel implements Runnable, KeyListener {
             }
         }
 
+        // Reset keys
         if (key == KeyEvent.VK_BACK_SPACE) {
             player1.respawnToStart();
             reset();

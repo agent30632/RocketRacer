@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 
 public class MainMenuPanel extends JPanel {
     static ImageIcon gameLogo = new ImageIcon("assets/img/game_logo.png");
@@ -13,6 +12,9 @@ public class MainMenuPanel extends JPanel {
     static JButton aboutButton;
     static JButton exitButton;
 
+    /**
+     * Creates a new instance of MainMenuPanel
+     */
     public MainMenuPanel() {
         super(true);
 
@@ -21,12 +23,15 @@ public class MainMenuPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(50, 50, 50));
 
+        // Where the stuff on the left side goes
+        // Even though there is nothing on the right side
         JPanel leftSidePanel = new JPanel();
         leftSidePanel.setBackground(null);
         leftSidePanel.setLayout(new BoxLayout(leftSidePanel, BoxLayout.PAGE_AXIS));
 
         logoLabel = new JLabel(gameLogo);
         
+        // Play button (level select)
         playButton = new JButton("Play");
         playButton.setFont(Main.uiTextBig);
         playButton.setForeground(Color.WHITE);
@@ -36,12 +41,11 @@ public class MainMenuPanel extends JPanel {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-                // Main.showGame("tracks/testTrack.track");
                 Main.showPlay();
             }
         });
 
+        // Tutorial button
         tutorialButton = new JButton("Tutorial");
         tutorialButton.setFont(Main.uiTextBig);
         tutorialButton.setForeground(Color.WHITE);
@@ -51,12 +55,11 @@ public class MainMenuPanel extends JPanel {
         tutorialButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-                // Main.showGame("tracks/testTrack.track");
                 Main.showTutorial();
             }
         });
 
+        // About game button
         aboutButton = new JButton("About");
         aboutButton.setFont(Main.uiTextBig);
         aboutButton.setForeground(Color.WHITE);
@@ -66,12 +69,12 @@ public class MainMenuPanel extends JPanel {
         aboutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 // Main.showGame("tracks/testTrack.track");
                 Main.showAbout();
             }
         });
 
+        // Exit game button
         exitButton = new JButton("Exit");
         exitButton.setFont(Main.uiTextBig);
         exitButton.setForeground(Color.WHITE);
@@ -81,11 +84,12 @@ public class MainMenuPanel extends JPanel {
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
+                // Man I hope you didn't accidentally press this button
                 System.exit(0);
             }
         });
 
+        // Adding everything
         leftSidePanel.add(logoLabel);
         leftSidePanel.add(Box.createRigidArea(new Dimension(0, 100)));
         leftSidePanel.add(playButton);

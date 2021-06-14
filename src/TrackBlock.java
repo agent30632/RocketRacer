@@ -1,25 +1,22 @@
 import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
 import java.util.HashSet;
 import java.util.StringTokenizer;
-import java.util.regex.*;
 
 import javax.swing.ImageIcon;
 
 public class TrackBlock {
 
-    static final int BLOCK_WIDTH = 256;
+    static final int BLOCK_WIDTH = 256; // Sprite size in px
     static final int BLOCK_HEIGHT = 256;
 
     private BlockType type; // Immutable
     private BlockDirection direction; // Immutable
 
-    public int gridX;
+    public int gridX; // location on the grid
     public int gridY;
-    public Rectangle hitbox;
+    public Rectangle hitbox; // block hitbox
 
-    public boolean checkpointHit;
+    public boolean checkpointHit; // if this is a checkpoint, reflects if player has touched it
 
     // Images
     public static ImageIcon startBlock = new ImageIcon("assets/img/block_start.png");
@@ -36,6 +33,13 @@ public class TrackBlock {
     public static Image resetBlockImage = resetBlock.getImage();
     public static Image boostBlockImage = boostBlock.getImage();
 
+    /**
+     * Creates a new TrackBlock with the specified parameters
+     * @param type block type from the BlockType enum
+     * @param gridX x coordinate on level grid
+     * @param gridY y coordinate on level grid
+     * @param direction block direction from BlockDirection enum
+     */
     public TrackBlock(BlockType type, int gridX, int gridY, BlockDirection direction) {
         this.type = type;
         this.gridX = gridX;
@@ -47,13 +51,15 @@ public class TrackBlock {
     }
 
     /**
-     * Constructs a TrackBlock object, under the assumption that it follows the format "(x, y) <type> <direction>".
+     * Constructs a TrackBlock object, under the assumption that it follows the format "(x, y) <type> <direction>". 
+     * This format should be checked before this function is called.
      * @param str the string to parse
      * @throws IllegalArgumentException if either the given coordinates are out of range
      */
     public static TrackBlock parseBlock(String str) throws IllegalArgumentException {
         int typeDirSeperator = str.lastIndexOf(" ");
 
+        // Direction of block
         String directionStr = str.substring(typeDirSeperator + 1);
         BlockDirection direction = null;
         switch (directionStr) {
@@ -71,9 +77,11 @@ public class TrackBlock {
                 break;
         }
 
+        // Block coordinate and type
         String coordTypeData = str.substring(0, typeDirSeperator);
         int coordTypeSeparator = coordTypeData.lastIndexOf(" ");
 
+        // Block type
         String typeStr = coordTypeData.substring(coordTypeSeparator + 1);
         BlockType type = null;
         switch (typeStr) {
@@ -100,6 +108,7 @@ public class TrackBlock {
                 break;
         }
 
+        // Block coordinates
         String coordData = coordTypeData.substring(0, coordTypeSeparator);
         StringTokenizer coordTokenizer = new StringTokenizer(coordData, " \t\n\r\f(),");
         
@@ -128,6 +137,7 @@ public class TrackBlock {
 
         int typeDirSeperator = str.lastIndexOf(" ");
 
+        // Direction
         String directionStr = str.substring(typeDirSeperator + 1);
         BlockDirection direction = null;
         switch (directionStr) {
@@ -148,8 +158,10 @@ public class TrackBlock {
             throw new IllegalArgumentException();
         }
 
+        // The rest
         String otherData = str.substring(0, typeDirSeperator);
 
+        // Block type
         String typeStr = otherData.substring(otherData.lastIndexOf(" ") + 1);
         BlockType type = null;
         switch (typeStr) {
@@ -170,6 +182,7 @@ public class TrackBlock {
             throw new IllegalArgumentException();
         }
 
+        // All coordinates
         String coordinates = otherData.substring(0, otherData.lastIndexOf(" "));
         StringTokenizer coordTokenizer = new StringTokenizer(coordinates, " \t\n\r\f(),");
         
@@ -207,6 +220,7 @@ public class TrackBlock {
             y2 = temp;
         }
 
+        // new blocks for everything in the range
         for (int i = x1; i <= x2; i++) {
             for (int j = y1; j <= y2; j++) {
                 blockSet.add(new TrackBlock(type, i, j, direction));
@@ -216,12 +230,15 @@ public class TrackBlock {
         return blockSet;
     }
 
+    /**
+     * Draws a TrackBlock
+     * @param g Graphics2D object to draw with
+     */
     public void draw(Graphics2D g) {
         Color previousColor = g.getColor();
 
         // int xPos = gridX * blockWidth;
         // int yPos = gridY * blockHeight;
-        // TODO: draw
         switch (type) {
             case WALL:
                 g.setColor(Color.GRAY);
@@ -229,7 +246,6 @@ public class TrackBlock {
                 break;
 
             case START:
-                // TODO: actual graphics and images and whatnot
                 g.setColor(Color.GREEN);
                 // g.fill(hitbox);
                 g.drawImage(startBlockImage, (int) hitbox.getX(), (int) hitbox.getY(), null);
@@ -310,7 +326,6 @@ public class TrackBlock {
 
     @Override
     public int hashCode() {
-        // TODO: should hashcode hash based on other factors too?
         final int prime = 31;
         int result = 1;
         result = prime * result + gridX;
@@ -333,8 +348,6 @@ public class TrackBlock {
             return false;
         return true;
     }
-
-    
 
     public BlockType getType() {
         return type;

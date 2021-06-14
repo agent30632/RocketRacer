@@ -89,7 +89,7 @@ public class Main {
 
             saveWrite.close();
         } catch (IOException e) {
-            //TODO: handle exception
+            e.printStackTrace();
         }
     }
 
@@ -126,7 +126,6 @@ public class Main {
      * @param trackFilepath path of the track file
      */
     public static void showGame(String trackFilepath) {
-        // TODO: new game time bois
         frame.dispose();
         frame = new JFrame(GAME_NAME);
         frame.setUndecorated(true);
@@ -234,14 +233,14 @@ public class Main {
                 return false;
             }
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             return false;
         }
     }
     
     public static void main(String[] args) {
-        // I have no idea what Java was doing before
-        // But this made the game much less laggy for me
+        // I had huge problems with lag before
+        // Forcing OpenGL fixed most of that
+        // Maybe if you have the same issue it will also work too
         boolean openGL = getOpenGLSetting();
         System.out.println(openGL);
         if (openGL) {
@@ -254,11 +253,13 @@ public class Main {
 
         loadPersonalData();
 
+        // Initializing panels
         menuPanel = new MainMenuPanel();
         playPanel = new PlayPanel();
         tutorialPanel = new TutorialPanel();
         aboutPanel = new AboutPanel();
 
+        // Packing the panel together
         frame.setUndecorated(true);
         frame.setIconImage(gameIconImage);
         frame.add(menuPanel);

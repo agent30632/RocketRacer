@@ -13,7 +13,6 @@ public class Time implements Comparable<Time> {
      * @throws IllegalArgumentException if the provided string is not in the expected format
      */
     public Time(String timeStr) throws IllegalArgumentException {
-        // TODO: disallow invalid times (i.e. negative numbers, less/more than 60 seconds/minutes)
         Pattern timePattern = Pattern.compile("[0-9]{2,}:[0-5][0-9]\\.[0-9]{3}");
         Matcher timeMatch = timePattern.matcher(timeStr);
 
@@ -67,7 +66,6 @@ public class Time implements Comparable<Time> {
 
     @Override
     public String toString() {
-        // TODO: idk if this actually works but we'll see
         return String.format("%02d:%02d.%03d", minutes, seconds, milliseconds);
     }
 
@@ -117,7 +115,6 @@ public class Time implements Comparable<Time> {
      * @return the two times added together
      */
     public Time add(Time t1, Time t2) {
-        // TODO: having both methods is rather unnecessary but I like it
         int newMilliseconds = t1.getMilliseconds() + t2.getMilliseconds();
         int newSeconds = t1.getSeconds() + t2.getSeconds();
         int newMinutes = t1.getMinutes() + t2.getMinutes();
