@@ -1,3 +1,8 @@
+/**
+ * Name: Zhenyang Cai
+ * Date: 2021-06-14
+ * Description: Top-down vroom vroom racing game except rocket so more like fwoosh brrr
+ */
 import java.awt.*;
 import java.io.*;
 import java.util.*;

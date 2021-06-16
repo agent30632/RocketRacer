@@ -1,3 +1,5 @@
+// main menu panel
+
 import java.awt.*;
 import java.awt.event.*;
 

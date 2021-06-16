@@ -1,8 +1,4 @@
-/*
- * Name: Zhenyang Cai
- * Date: 2021-06-13
- * Description: panel where all gameplay occurs
- */
+// panel where gameplay occurs
 
 import java.awt.*;
 import java.awt.event.*;
@@ -595,45 +591,52 @@ public class Game extends JPanel implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        // Idk why I singled out escape as the only key to be ignored
-        // I guess I was planning on having a pause menu or something
-        // Oops
-        if (startingState && key != KeyEvent.VK_ESCAPE) {
-            start();
-        }
-        // Player controls (assuming they have control)
-        if (!player1.isNoControl) {
-            if (key == KeyEvent.VK_W) {
-                player1.isAccelerating = true;
-                if (!engineSoundPlaying) {
-                    playEngineSound();
-                    engineSoundPlaying = true;
+        if (key == KeyEvent.VK_ESCAPE) {
+            stopMusic();
+            Main.saveDataToFile();
+            Main.exitFromGame();
+        } else {
+            // Idk why I singled out escape as the only key to be ignored
+            // I guess I was planning on having a pause menu or something
+            // Oops
+            if (startingState && key != KeyEvent.VK_ESCAPE) {
+                start();
+            }
+            // Player controls (assuming they have control)
+            if (!player1.isNoControl) {
+                if (key == KeyEvent.VK_W) {
+                    player1.isAccelerating = true;
+                    if (!engineSoundPlaying) {
+                        playEngineSound();
+                        engineSoundPlaying = true;
+                    }
+                }
+                if (key == KeyEvent.VK_SHIFT) {
+                    player1.isBraking = true;
+                }
+        
+                if (key == KeyEvent.VK_D) {
+                    player1.isTurningRight = true;
+                }
+                if (key == KeyEvent.VK_A) {
+                    player1.isTurningLeft = true;
                 }
             }
-            if (key == KeyEvent.VK_SHIFT) {
-                player1.isBraking = true;
-            }
-    
-            if (key == KeyEvent.VK_D) {
-                player1.isTurningRight = true;
-            }
-            if (key == KeyEvent.VK_A) {
-                player1.isTurningLeft = true;
-            }
-        }
 
-        // Reset keys
-        if (key == KeyEvent.VK_BACK_SPACE) {
-            player1.respawnToStart();
-            reset();
-        } else if (key == KeyEvent.VK_ENTER && !player1.isFinished) {
-            if (player1.lastCheckpoint == null) {
+            // Reset keys
+            if (key == KeyEvent.VK_BACK_SPACE) {
                 player1.respawnToStart();
                 reset();
-            } else {
-                player1.resetToCP();
+            } else if (key == KeyEvent.VK_ENTER && !player1.isFinished) {
+                if (player1.lastCheckpoint == null) {
+                    player1.respawnToStart();
+                    reset();
+                } else {
+                    player1.resetToCP();
+                }
             }
         }
+        
     }
 
     @Override

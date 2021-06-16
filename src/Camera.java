@@ -1,3 +1,5 @@
+// camera obj
+
 public class Camera {
     private double x;
     private double y;

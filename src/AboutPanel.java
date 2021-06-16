@@ -1,3 +1,5 @@
+// about game panel
+
 import java.awt.*;
 import java.awt.event.*;
 
